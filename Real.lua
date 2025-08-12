@@ -634,9 +634,8 @@ Tabs.Main:Section({ Title = "Auto Feed", Icon = "utensils" })
 Tabs.Main:Dropdown({
     Title = "Select Food",
     Desc = "Choose the food",
-    Values = alimentos,
-    Value = selectedFood,
-    Multi = false,
+    Values = selectedFood,
+    Multi = true,
     Callback = function(value)
         selectedFood = value
     end
@@ -1238,6 +1237,8 @@ Tabs.Tp:Button({
         end
     end
 })
+
+Tabs.br:Section({ Title = "Warning: Bring still Bug by Anti-Cheat", Icon = "info" })
 
 Tabs.br:Section({ Title = "Junk", Icon = "box" })
 
