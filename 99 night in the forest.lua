@@ -567,11 +567,6 @@ Tabs.Fly = Window:Tab({
     Desc = "Stellar"
 })
 
-Tabs.Hitbox = Window:Tab({
-    Title = "Hitbox",
-    Icon = "target",
-    Desc = "Stellar"
-})
 Tabs.Combat = Window:Tab({
     Title = "Combat",
     Icon = "sword",
@@ -2157,47 +2152,3 @@ Tabs.More:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Somtank"))()
     end
 })
-
-local hitboxSettings = {All=false, Alien=false, Wolf=false, Bunny=false, Cultist=false, Bear=false, Show=false, Size=10}
-
-local function updateHitboxForModel(model)
-    local root = model:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local name = model.Name:lower()
-    local shouldResize =
-        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bunny") or name:find("dragon") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
-        (hitboxSettings.Alien and (name:find("alien") or name:find("alien elite"))) or
-        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
-        (hitboxSettings.Bunny and name:find("bunny")) or
-        (hitboxSettings.Bear and (name:find("bear") or name:find("polar bear"))) or
-        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) -- <--- ตรงนี้ได้ลบ 'or' ที่เกินออกแล้ว
-    if shouldResize then
-        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
-        root.Transparency = hitboxSettings.Show and 0.8 or 1
-        root.Color = Color3.fromRGB(255, 0, 0)
-        root.Material = Enum.Material.Neon
-        root.CanCollide = false
-    end
-end
-
-task.spawn(function()
-    while true do
-        for _, model in ipairs(workspace:GetDescendants()) do
-            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
-                updateHitboxForModel(model)
-            end
-        end
-        task.wait(2)
-    end
-end)
-
-Tabs.Hitbox:Section({ Title = "Hitbox", Icon = "target" })
-
-Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=300, Default=20}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
-Tabs.Hitbox:Toggle({Title="Show Hitbox", Default=false, Callback=function(val) hitboxSettings.Show=val end})
-Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All=val end})
-Tabs.Hitbox:Toggle({Title="Expand Alien Hitbox", Default=false, Callback=function(val) hitboxSettings.Alien=val end})
-Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function(val) hitboxSettings.Bear=val end})
-Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
-Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
-Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
