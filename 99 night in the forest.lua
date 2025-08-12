@@ -571,9 +571,14 @@ Tabs.Combat = Window:Tab({
     Icon = "sword",
     Desc = "Stellar"
 })
+Tabs.More = Window:Tab({
+    Title = "Other",
+    Icon = "crown",
+    Desc = "Stellar"
+})
 Tabs.Misc = Window:Tab({
-    Title = "Test",
-    Icon = "sword",
+    Title = "Settings",
+    Icon = "settings",
     Desc = "Stellar"
 })
 
@@ -1735,6 +1740,8 @@ Tabs.Main:Toggle({
     end
 })
 
+Tabs.Misc:Section({ Title = "Visual", Icon = "lightbulb" })
+
 local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 
@@ -1745,7 +1752,7 @@ local oldClockTime = Lighting.ClockTime
 local fullBrightConnection
 
 Tabs.Misc:Toggle({
-    Title = "FullBright",
+    Title = "Full-Bright",
     Default = false,
     Callback = function(state)
         if state then
@@ -1790,7 +1797,7 @@ local oldFogColor = Lighting.FogColor
 local noFogConnection
 
 Tabs.Misc:Toggle({
-    Title = "No Fog",
+    Title = "No-Fog",
     Default = false,
     Callback = function(state)
         if state then
@@ -1829,14 +1836,14 @@ local Lighting = game:GetService("Lighting")
 -- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
 local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
 vibrantEffect.Name = "VibrantEffect"
-vibrantEffect.Saturation = 1.5      -- สด 200%
+vibrantEffect.Saturation = 0.9      -- สด 200%
 vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
 vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
 vibrantEffect.Enabled = false
 vibrantEffect.Parent = Lighting
 
 Tabs.Misc:Toggle({
-    Title = "Vibrant Colors 200%",
+    Title = "Vibrant Colors",
     Default = false,
     Callback = function(state)
         if state then
@@ -1857,47 +1864,7 @@ Tabs.Misc:Toggle({
     end
 })
 
-Tabs.Misc:Button({
-    Title = "FPS Boost",
-    Callback = function()
-        pcall(function()
-            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-            local lighting = game:GetService("Lighting")
-            lighting.Brightness = 0
-            lighting.FogEnd = 100
-            lighting.GlobalShadows = false
-            lighting.EnvironmentDiffuseScale = 0
-            lighting.EnvironmentSpecularScale = 0
-            lighting.ClockTime = 14
-            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
-            local terrain = workspace:FindFirstChildOfClass("Terrain")
-            if terrain then
-                terrain.WaterWaveSize = 0
-                terrain.WaterWaveSpeed = 0
-                terrain.WaterReflectance = 0
-                terrain.WaterTransparency = 1
-            end
-            for _, obj in ipairs(lighting:GetDescendants()) do
-                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
-                    obj.Enabled = false
-                end
-            end
-            for _, obj in ipairs(game:GetDescendants()) do
-                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
-                    obj.Enabled = false
-                elseif obj:IsA("Texture") or obj:IsA("Decal") then
-                    obj.Transparency = 1
-                end
-            end
-            for _, part in ipairs(workspace:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CastShadow = false
-                end
-            end
-        end)
-        print("✅ FPS Boost Applied")
-    end
-})
+Tabs.Misc:Section({ Title = "Show Status", Icon = "settings-2" })
 
 local showFPS, showPing = true, true
 local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
@@ -1938,3 +1905,64 @@ RunService.RenderStepped:Connect(function()
 end)
 Tabs.Misc:Toggle({Title="Show FPS", Default=true, Callback=function(val) showFPS=val; fpsText.Visible=val end})
 Tabs.Misc:Toggle({Title="Show Ping (ms)", Default=true, Callback=function(val) showPing=val; msText.Visible=val end})
+
+
+Tabs.Misc:Section({ Title = "Low Graphic", Icon = "user-cog" })
+
+Tabs.Misc:Button({
+    Title = "FPS Boost (By Roblox)",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("✅ FPS Boost Applied")
+    end
+})
+
+Tabs.Misc:Button({
+    Title = "FPS Boost (By DYHUB)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+    end
+})
+
+Tabs.More:Section({ Title = "Auto Farm", Icon = "gem" })
+
+Tabs.More:Button({
+    Title = "Auto Farm (Gem)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Somtank"))()
+    end
+})
