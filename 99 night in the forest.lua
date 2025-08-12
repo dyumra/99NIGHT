@@ -1864,47 +1864,95 @@ Tabs.Misc:Toggle({
     end
 })
 
-Tabs.Misc:Section({ Title = "Show Status", Icon = "settings-2" })
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local Camera = workspace.CurrentCamera
 
+-- Settings
 local showFPS, showPing = true, true
-local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
-fpsText.Size, fpsText.Position, fpsText.Color, fpsText.Center, fpsText.Outline, fpsText.Visible =
-    16, Vector2.new(Camera.ViewportSize.X-100, 10), Color3.fromRGB(0,255,0), false, true, showFPS
-msText.Size, msText.Position, msText.Color, msText.Center, msText.Outline, msText.Visible =
-    16, Vector2.new(Camera.ViewportSize.X-100, 30), Color3.fromRGB(0,255,0), false, true, showPing
-local fpsCounter, fpsLastUpdate = 0, tick()
+local fpsCounter, fpsLastUpdate, fpsValue = 0, tick(), 0
 
+-- Drawing setup
+local function createText(yOffset)
+    local textObj = Drawing.new("Text")
+    textObj.Size = 16
+    textObj.Position = Vector2.new(Camera.ViewportSize.X - 110, yOffset)
+    textObj.Color = Color3.fromRGB(0, 255, 0)
+    textObj.Center = false
+    textObj.Outline = true
+    textObj.Visible = true
+    return textObj
+end
+
+local fpsText = createText(10)
+local msText = createText(30)
+
+-- Adjust position when screen size changes
+Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+    fpsText.Position = Vector2.new(Camera.ViewportSize.X - 110, 10)
+    msText.Position = Vector2.new(Camera.ViewportSize.X - 110, 30)
+end)
+
+-- Main update loop
 RunService.RenderStepped:Connect(function()
     fpsCounter += 1
+
     if tick() - fpsLastUpdate >= 1 then
+        fpsValue = fpsCounter
+        fpsCounter = 0
+        fpsLastUpdate = tick()
+
+        -- FPS Display
         if showFPS then
-            fpsText.Text = "FPS: " .. tostring(fpsCounter)
+            fpsText.Text = string.format("FPS: %d", fpsValue)
+            fpsText.Color = fpsValue >= 50 and Color3.fromRGB(0, 255, 0)
+                or fpsValue >= 30 and Color3.fromRGB(255, 165, 0)
+                or Color3.fromRGB(255, 0, 0)
             fpsText.Visible = true
         else
             fpsText.Visible = false
         end
+
+        -- Ping Display
         if showPing then
-            local pingStat = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+            local pingStat = Stats.Network.ServerStatsItem["Data Ping"]
             local ping = pingStat and math.floor(pingStat:GetValue()) or 0
-            msText.Text = "Ping: " .. ping .. " ms"
-            if ping <= 60 then
-                msText.Color = Color3.fromRGB(0, 255, 0)
-            elseif ping <= 120 then
-                msText.Color = Color3.fromRGB(255, 165, 0)
-            else
-                msText.Color = Color3.fromRGB(255, 0, 0)
-                msText.Text = "Ew Wifi Ping: " .. ping .. " ms"
+            local color, label = Color3.fromRGB(0, 255, 0), "Ping: "
+
+            if ping > 120 then
+                color, label = Color3.fromRGB(255, 0, 0), "Ew Wifi Ping: "
+            elseif ping > 60 then
+                color = Color3.fromRGB(255, 165, 0)
             end
+
+            msText.Text = string.format("%s%d ms", label, ping)
+            msText.Color = color
             msText.Visible = true
         else
             msText.Visible = false
         end
-        fpsCounter = 0
-        fpsLastUpdate = tick()
     end
 end)
-Tabs.Misc:Toggle({Title="Show FPS", Default=true, Callback=function(val) showFPS=val; fpsText.Visible=val end})
-Tabs.Misc:Toggle({Title="Show Ping (ms)", Default=true, Callback=function(val) showPing=val; msText.Visible=val end})
+
+Tabs.Misc:Section({ Title = "Show Status", Icon = "settings-2" })
+
+-- UI Toggles
+Tabs.Misc:Toggle({
+    Title = "Show FPS",
+    Default = true,
+    Callback = function(val)
+        showFPS = val
+        fpsText.Visible = val
+    end
+})
+Tabs.Misc:Toggle({
+    Title = "Show Ping (ms)",
+    Default = true,
+    Callback = function(val)
+        showPing = val
+        msText.Visible = val
+    end
+})
 
 
 Tabs.Misc:Section({ Title = "Low Graphic", Icon = "user-cog" })
@@ -1951,6 +1999,7 @@ Tabs.Misc:Button({
     end
 })
 
+-- สร้างแท็บก่อน
 Tabs.Misc:Button({
     Title = "FPS Boost (By DYHUB)",
     Callback = function()
@@ -1958,8 +2007,10 @@ Tabs.Misc:Button({
     end
 })
 
+-- Section ในแท็บ More
 Tabs.More:Section({ Title = "Auto Farm", Icon = "gem" })
 
+-- ปุ่มในแท็บ More
 Tabs.More:Button({
     Title = "Auto Farm (Gem)",
     Callback = function()
