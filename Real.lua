@@ -634,7 +634,7 @@ Tabs.Main:Section({ Title = "Auto Feed", Icon = "utensils" })
 Tabs.Main:Dropdown({
     Title = "Select Food",
     Desc = "Choose the food",
-    Values = selectedFood,
+    Value = selectedFood,
     Multi = true,
     Callback = function(value)
         selectedFood = value
