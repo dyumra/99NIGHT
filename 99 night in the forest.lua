@@ -1,4 +1,7 @@
+repeat task.wait() until game:IsLoaded()
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -565,6 +568,11 @@ Tabs.Fly = Window:Tab({
 })
 Tabs.Combat = Window:Tab({
     Title = "Combat",
+    Icon = "sword",
+    Desc = "Stellar"
+})
+Tabs.Misc = Window:Tab({
+    Title = "Test",
     Icon = "sword",
     Desc = "Stellar"
 })
@@ -1726,3 +1734,207 @@ Tabs.Main:Toggle({
         end
     end
 })
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local oldAmbient = Lighting.Ambient
+local oldBrightness = Lighting.Brightness
+local oldClockTime = Lighting.ClockTime
+
+local fullBrightConnection
+
+Tabs.Misc:Toggle({
+    Title = "FullBright",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิด FullBright
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.Brightness = 10
+            Lighting.ClockTime = 14
+
+            -- เริ่มตรวจสอบตลอดเวลา
+            fullBrightConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.ClockTime ~= 14 then
+                    Lighting.ClockTime = 14
+                end
+                if Lighting.Brightness ~= 10 then
+                    Lighting.Brightness = 10
+                end
+                if Lighting.Ambient ~= Color3.new(1, 1, 1) then
+                    Lighting.Ambient = Color3.new(1, 1, 1)
+                end
+            end)
+        else
+            -- ปิด FullBright และหยุดตรวจสอบ
+            if fullBrightConnection then
+                fullBrightConnection:Disconnect()
+                fullBrightConnection = nil
+            end
+
+            Lighting.Ambient = oldAmbient
+            Lighting.Brightness = oldBrightness
+            Lighting.ClockTime = oldClockTime
+        end
+    end
+})
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local oldFogStart = Lighting.FogStart
+local oldFogEnd = Lighting.FogEnd
+local oldFogColor = Lighting.FogColor
+
+local noFogConnection
+
+Tabs.Misc:Toggle({
+    Title = "No Fog",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- ปิดหมอก
+            Lighting.FogStart = 0
+            Lighting.FogEnd = 1e10
+            Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+
+            -- ตรวจสอบตลอดว่าไม่มีใครเปลี่ยน
+            noFogConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.FogStart ~= 0 then
+                    Lighting.FogStart = 0
+                end
+                if Lighting.FogEnd ~= 1e10 then
+                    Lighting.FogEnd = 1e10
+                end
+                if Lighting.FogColor ~= Color3.fromRGB(255, 255, 255) then
+                    Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+                end
+            end)
+        else
+            -- ปิด toggle และคืนค่าหมอกเดิม
+            if noFogConnection then
+                noFogConnection:Disconnect()
+                noFogConnection = nil
+            end
+            Lighting.FogStart = oldFogStart
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogColor = oldFogColor
+        end
+    end
+})
+
+local Lighting = game:GetService("Lighting")
+
+-- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
+vibrantEffect.Name = "VibrantEffect"
+vibrantEffect.Saturation = 1.5      -- สด 200%
+vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
+vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
+vibrantEffect.Enabled = false
+vibrantEffect.Parent = Lighting
+
+Tabs.Misc:Toggle({
+    Title = "Vibrant Colors 200%",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิดโหมดสีสด
+            Lighting.Ambient = Color3.fromRGB(180, 180, 180)
+            Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
+            Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
+            Lighting.ColorShift_Bottom = Color3.fromRGB(200, 240, 255)
+            vibrantEffect.Enabled = true
+        else
+            -- ปิดโหมด กลับค่าดั้งเดิม
+            Lighting.Ambient = Color3.new(0, 0, 0)
+            Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Top = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
+            vibrantEffect.Enabled = false
+        end
+    end
+})
+
+Tabs.Misc:Button({
+    Title = "FPS Boost",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("✅ FPS Boost Applied")
+    end
+})
+
+local showFPS, showPing = true, true
+local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
+fpsText.Size, fpsText.Position, fpsText.Color, fpsText.Center, fpsText.Outline, fpsText.Visible =
+    16, Vector2.new(Camera.ViewportSize.X-100, 10), Color3.fromRGB(0,255,0), false, true, showFPS
+msText.Size, msText.Position, msText.Color, msText.Center, msText.Outline, msText.Visible =
+    16, Vector2.new(Camera.ViewportSize.X-100, 30), Color3.fromRGB(0,255,0), false, true, showPing
+local fpsCounter, fpsLastUpdate = 0, tick()
+
+RunService.RenderStepped:Connect(function()
+    fpsCounter += 1
+    if tick() - fpsLastUpdate >= 1 then
+        if showFPS then
+            fpsText.Text = "FPS: " .. tostring(fpsCounter)
+            fpsText.Visible = true
+        else
+            fpsText.Visible = false
+        end
+        if showPing then
+            local pingStat = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+            local ping = pingStat and math.floor(pingStat:GetValue()) or 0
+            msText.Text = "Ping: " .. ping .. " ms"
+            if ping <= 60 then
+                msText.Color = Color3.fromRGB(0, 255, 0)
+            elseif ping <= 120 then
+                msText.Color = Color3.fromRGB(255, 165, 0)
+            else
+                msText.Color = Color3.fromRGB(255, 0, 0)
+                msText.Text = "Ew Wifi Ping: " .. ping .. " ms"
+            end
+            msText.Visible = true
+        else
+            msText.Visible = false
+        end
+        fpsCounter = 0
+        fpsLastUpdate = tick()
+    end
+end)
+Tabs.Misc:Toggle({Title="Show FPS", Default=true, Callback=function(val) showFPS=val; fpsText.Visible=val end})
+Tabs.Misc:Toggle({Title="Show Ping (ms)", Default=true, Callback=function(val) showPing=val; msText.Visible=val end})
