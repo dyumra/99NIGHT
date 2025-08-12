@@ -1061,7 +1061,8 @@ coroutine.wrap(function()
     end
 end)()
 
-Tabs.Tp:Section({ Title = "Scan Map", Icon = "map" })
+
+Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Toggle({
     Title = "Scan Map (Essential)",
@@ -1107,8 +1108,6 @@ Tabs.Tp:Toggle({
         end)
     end
 })
-
-Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Button({
     Title = "Teleport to Campfire",
@@ -1893,7 +1892,7 @@ local oldClockTime = Lighting.ClockTime
 local fullBrightConnection
 
 Tabs.Misc:Toggle({
-    Title = "Full-Bright",
+    Title = "Full Bright",
     Default = false,
     Callback = function(state)
         if state then
@@ -1938,7 +1937,7 @@ local oldFogColor = Lighting.FogColor
 local noFogConnection
 
 Tabs.Misc:Toggle({
-    Title = "No-Fog",
+    Title = "No Fog",
     Default = false,
     Callback = function(state)
         if state then
