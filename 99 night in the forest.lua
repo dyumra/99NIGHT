@@ -566,6 +566,12 @@ Tabs.Fly = Window:Tab({
     Icon = "user",
     Desc = "Stellar"
 })
+
+Tabs.Hitbox = Window:Tab({
+    Title = "Hitbox",
+    Icon = "target",
+    Desc = "Stellar"
+})
 Tabs.Combat = Window:Tab({
     Title = "Combat",
     Icon = "sword",
@@ -727,7 +733,7 @@ local function teleportToAirAndAnchor()
         character.HumanoidRootPart.CFrame = CFrame.new(airPosition)
         task.wait(0.5)
         character.HumanoidRootPart.Anchored = true
-        createNotif("AutoFarmLogs", "Please don't do anything or touch", 2)
+        print("AutoFarmLogs", "Please don't do anything or touch", 2)
         return true
     end
     return false
@@ -741,7 +747,7 @@ local function unanchorPlayer()
         if originalPosition then
             character.HumanoidRootPart.CFrame = originalPosition
         end
-        createNotif("AutoFarmLogs", "AutoFarm Done", 2)
+        print("AutoFarmLogs", "AutoFarm Done", 2)
     end
 end
 
@@ -749,14 +755,14 @@ end
 local function teleportAllTreesToPlayer()
     local character = player.Character
     if not (character and character:FindFirstChild("HumanoidRootPart")) then
-        createNotif("AutoFarmLogs", "Player character not found!", 3)
+        print("AutoFarmLogs", "Player character not found!", 3)
         return false
     end
 
     local playerPos = character.HumanoidRootPart.Position
     local treesFound = 0
     if not workspace:FindFirstChild("Map") then
-        createNotif("AutoFarmLogs", "You're not in the game!", 3)
+        print("AutoFarmLogs", "You're not in the game!", 3)
         return false
     end
 
@@ -802,7 +808,7 @@ local function teleportAllTreesToPlayer()
             end
         end
         if count > 0 then
-            createNotif("AutoFarmLogs", "Wait! " .. count .. " " .. folderName, 1)
+            print("AutoFarmLogs", "Wait! " .. count .. " " .. folderName, 1)
         end
         return count
     end
@@ -814,7 +820,7 @@ local function teleportAllTreesToPlayer()
         treesFound += teleportTreesFromFolder(workspace.Map.Foliage, "Foliage")
     end
 
-    createNotif("AutoFarmLogs", "AutoFarm Start " .. treesFound .. " Equip your Axe", 3)
+    print("AutoFarmLogs", "AutoFarm Start " .. treesFound .. " Equip your Axe", 3)
     return treesFound > 0
 end
 
@@ -823,14 +829,14 @@ local function teleportAllLogsToPlayer()
     createNotif("AutoFarmLogs", "Wait.", 2)
     local character = player.Character
     if not (character and character:FindFirstChild("HumanoidRootPart")) then
-        createNotif("AutoFarmLogs", "Player not found!", 3)
+        print("AutoFarmLogs", "Player not found!", 3)
         return false
     end
 
     local playerPos = character.HumanoidRootPart.Position
     local logsFound = 0
     if not workspace:FindFirstChild("Items") then
-        createNotif("AutoFarmLogs", "You're not in the game?", 3)
+        print("AutoFarmLogs", "You're not in the game?", 3)
         return false
     end
 
@@ -861,7 +867,6 @@ local function teleportAllLogsToPlayer()
         end
     end
 
-    createNotif("AutoFarmLogs", "Collected " .. logsFound .. " Logs from AutoLogFarm", 3)
     return logsFound > 0
 end
 
@@ -1002,14 +1007,14 @@ Tabs.Auto:Toggle({
                                 if item.Name == itemName then
                                     moveItemToPos(item, campfireDropPos)
                                     pulledCount += 1
-                                    if pulledCount >= 10 then
+                                    if pulledCount >= 3 then
                                         break -- ดึงครบ 10 ชิ้นแล้ว ออกจาก loop
                                     end
                                 end
                             end
                         end
                     end
-                    task.wait(3) -- รอ 3 วิ ก่อนดึงรอบต่อไป
+                    task.wait(2) -- รอ 3 วิ ก่อนดึงรอบต่อไป
                 end
             end)
         end
@@ -1056,6 +1061,53 @@ coroutine.wrap(function()
     end
 end)()
 
+Tabs.Tp:Section({ Title = "Scan Map", Icon = "map" })
+
+Tabs.Tp:Toggle({
+    Title = "Scan Map (Essential)",
+    Default = false,
+    Callback = function(state)
+        getgenv().scan_map = state
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            local map = workspace:FindFirstChild("Map")
+            if not map then return end
+
+            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+            if not foliage then return end
+
+            while getgenv().scan_map do
+                local trees = {}
+                for _, obj in ipairs(foliage:GetChildren()) do
+                    if obj.Name == "Small Tree" and obj:IsA("Model") then
+                        local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                        if trunk then
+                            table.insert(trees, trunk)
+                        end
+                    end
+                end
+
+                for _, trunk in ipairs(trees) do
+                    if not getgenv().scan_map then break end
+                    if trunk and trunk.Parent then
+                        local treeCFrame = trunk.CFrame
+                        local rightVector = treeCFrame.RightVector
+                        local targetPosition = treeCFrame.Position + rightVector * 69
+                        hrp.CFrame = CFrame.new(targetPosition)
+                        task.wait(0.01)
+                    end
+                end
+            end
+        end)
+    end
+})
+
 Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Button({
@@ -1074,6 +1126,72 @@ Tabs.Tp:Button({
     end
 })
 
+Tabs.Tp:Button({
+    Title = "Teleport to Safe Zone",
+    Callback = function()
+        if not workspace:FindFirstChild("SafeZonePart") then
+            local createpart = Instance.new("Part")
+            createpart.Name = "SafeZonePart"
+            createpart.Size = Vector3.new(50, 50, 50)
+            createpart.Position = Vector3.new(0, 105, 0)
+            createpart.Anchored = true
+            createpart.CanCollide = false
+            createpart.Transparency = 0.8
+            createpart.Color = Color3.fromRGB(255, 255, 255)
+            createpart.Parent = workspace
+        end
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(0, 110, 0)
+    end
+})
+
+Tabs.Tp:Button({
+    Title="Teleport to Trader (Bunny Foot)",
+    Callback=function()
+        local pos = Vector3.new(-37.08, 3.98, -16.33)
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(pos)
+    end
+})
+
+Tabs.Tp:Section({ Title = "Tree", Icon = "tree-deciduous" })
+
+Tabs.Tp:Button({
+    Title = "Teleport to Random Tree",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart", 3)
+        if not hrp then return end
+
+        local map = workspace:FindFirstChild("Map")
+        if not map then return end
+
+        local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+        if not foliage then return end
+
+        local trees = {}
+        for _, obj in ipairs(foliage:GetChildren()) do
+            if obj.Name == "Small Tree" and obj:IsA("Model") then
+                local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                if trunk then
+                    table.insert(trees, trunk)
+                end
+            end
+        end
+
+        if #trees > 0 then
+            local trunk = trees[math.random(1, #trees)]
+            local treeCFrame = trunk.CFrame
+            local rightVector = treeCFrame.RightVector
+            local targetPosition = treeCFrame.Position + rightVector * 3
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+})
 
 Tabs.Tp:Section({ Title = "Children", Icon = "eye" })
 
@@ -1390,16 +1508,23 @@ Tabs.Fly:Toggle({
 
 local Players = game:GetService("Players")
 local speed = 16
+local jump = 50
 
 local function setSpeed(val)
     local humanoid = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if humanoid then humanoid.WalkSpeed = val end
 end
 
+local function setJump(val)
+    local humanoid = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.JumpPower = val
+    end
+end
 
 Tabs.Fly:Slider({
     Title = "Speed",
-    Value = { Min = 16, Max = 150, Default = 16 },
+    Value = { Min = 16, Max = 300, Default = 16 },
     Callback = function(value)
         speed = value
     end
@@ -1413,12 +1538,28 @@ Tabs.Fly:Toggle({
     end
 })
 
+Tabs.Fly:Slider({
+    Title = "Jump",
+    Value = { Min = 10, Max = 300, Default = 50 },
+    Callback = function(value)
+        jump = value
+    end
+})
+
+Tabs.Fly:Toggle({
+    Title = "Enable Jump",
+    Value = false,
+    Callback = function(state)
+        setJump(state and jump or 16)
+    end
+})
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local noclipConnection
 
 Tabs.Fly:Toggle({
-    Title = "Noclip",
+    Title = "No Clip",
     Value = false,
     Callback = function(state)
         if state then
@@ -1446,7 +1587,7 @@ local Players = game:GetService("Players")
 local infJumpConnection
 
 Tabs.Fly:Toggle({
-    Title = "Inf Jump",
+    Title = "Infinite Jump",
     Value = false,
     Callback = function(state)
         if state then
@@ -2017,3 +2158,47 @@ Tabs.More:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Somtank"))()
     end
 })
+
+local hitboxSettings = {All=false, Alien=false, Wolf=false, Bunny=false, Cultist=false, Bear=false, Show=false, Size=10}
+
+local function updateHitboxForModel(model)
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local name = model.Name:lower()
+    local shouldResize =
+        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bunny") or name:find("dragon") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
+        (hitboxSettings.Alien and (name:find("alien") or name:find("alien elite"))) or
+        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
+        (hitboxSettings.Bunny and name:find("bunny")) or
+        (hitboxSettings.Bear and (name:find("bear") or name:find("polar bear"))) or
+        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) -- <--- ตรงนี้ได้ลบ 'or' ที่เกินออกแล้ว
+    if shouldResize then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.8 or 1
+        root.Color = Color3.fromRGB(255, 0, 0)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+    end
+end
+
+task.spawn(function()
+    while true do
+        for _, model in ipairs(workspace:GetDescendants()) do
+            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
+                updateHitboxForModel(model)
+            end
+        end
+        task.wait(2)
+    end
+end)
+
+Tabs.Hitbox:Section({ Title = "Hitbox", Icon = "target" })
+
+Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=300, Default=20}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
+Tabs.Hitbox:Toggle({Title="Show Hitbox", Default=false, Callback=function(val) hitboxSettings.Show=val end})
+Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All=val end})
+Tabs.Hitbox:Toggle({Title="Expand Alien Hitbox", Default=false, Callback=function(val) hitboxSettings.Alien=val end})
+Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function(val) hitboxSettings.Bear=val end})
+Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
+Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
+Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
