@@ -552,7 +552,7 @@ Tabs.esp = Window:Tab({
     Desc = "Stellar"
 })
 Tabs.br = Window:Tab({
-    Title = "Bring",
+    Title = "Bring (Bug)",
     Icon = "package",
     Desc = "Stellar"
 })
