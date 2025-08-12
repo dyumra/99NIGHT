@@ -637,7 +637,7 @@ Tabs.Main:Dropdown({
     Desc = "Choose the food",
     Values = alimentos,
     Value = selectedFood,
-    Multi = false,
+    Multi = true,
     Callback = function(value)
         selectedFood = value
     end
