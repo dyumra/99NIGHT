@@ -677,14 +677,6 @@ Tabs.Main:Toggle({
 
 Tabs.Auto:Section({ Title = "Auto Farm Log", Icon = "axe" })
 
-local function createNotif(title, text, duration)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = duration or 2
-    })
-end
-
 -- ตัวแปรหลัก
 local autoTreeFarmActive = false
 local autoFarmEnabled = false
@@ -701,7 +693,7 @@ local player = Players.LocalPlayer
 local lastClickTime = 0
 local clickDelay = 0.3
 
--- ฟังก์ชันจำลองการกดปุ่ม Sprint
+-- ฟังก์ชันจำลองการคลิก
 local function simulateClick()
     if not autoFarmEnabled then return end
     local currentTime = tick()
@@ -727,7 +719,6 @@ local function teleportToAirAndAnchor()
         character.HumanoidRootPart.CFrame = CFrame.new(airPosition)
         task.wait(0.5)
         character.HumanoidRootPart.Anchored = true
-        createNotif("AutoFarmLogs", "Please don't do anything or touch", 2)
         return true
     end
     return false
@@ -741,7 +732,6 @@ local function unanchorPlayer()
         if originalPosition then
             character.HumanoidRootPart.CFrame = originalPosition
         end
-        createNotif("AutoFarmLogs", "AutoFarm Done", 2)
     end
 end
 
@@ -749,18 +739,16 @@ end
 local function teleportAllTreesToPlayer()
     local character = player.Character
     if not (character and character:FindFirstChild("HumanoidRootPart")) then
-        createNotif("AutoFarmLogs", "Player character not found!", 3)
         return false
     end
 
     local playerPos = character.HumanoidRootPart.Position
     local treesFound = 0
     if not workspace:FindFirstChild("Map") then
-        createNotif("AutoFarmLogs", "You're not in the game!", 3)
         return false
     end
 
-    local function teleportTreesFromFolder(folder, folderName)
+    local function teleportTreesFromFolder(folder)
         if not folder then return 0 end
         local count = 0
         for _, item in pairs(folder:GetChildren()) do
@@ -801,68 +789,17 @@ local function teleportAllTreesToPlayer()
                 task.wait(0.05)
             end
         end
-        if count > 0 then
-            createNotif("AutoFarmLogs", "Wait! " .. count .. " " .. folderName, 1)
-        end
         return count
     end
 
     if workspace.Map:FindFirstChild("Landmarks") then
-        treesFound += teleportTreesFromFolder(workspace.Map.Landmarks, "Landmarks")
+        treesFound += teleportTreesFromFolder(workspace.Map.Landmarks)
     end
     if workspace.Map:FindFirstChild("Foliage") then
-        treesFound += teleportTreesFromFolder(workspace.Map.Foliage, "Foliage")
+        treesFound += teleportTreesFromFolder(workspace.Map.Foliage)
     end
 
-    createNotif("AutoFarmLogs", "AutoFarm Start " .. treesFound .. " Equip your Axe", 3)
     return treesFound > 0
-end
-
--- เทเลพอร์ต Logs
-local function teleportAllLogsToPlayer()
-    createNotif("AutoFarmLogs", "Wait.", 2)
-    local character = player.Character
-    if not (character and character:FindFirstChild("HumanoidRootPart")) then
-        createNotif("AutoFarmLogs", "Player not found!", 3)
-        return false
-    end
-
-    local playerPos = character.HumanoidRootPart.Position
-    local logsFound = 0
-    if not workspace:FindFirstChild("Items") then
-        createNotif("AutoFarmLogs", "You're not in the game?", 3)
-        return false
-    end
-
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:FindFirstChild("Meshes/log_Cylinder") then
-            logsFound += 1
-            local logPosition = Vector3.new(
-                playerPos.X + math.random(-4, 4),
-                playerPos.Y + 1,
-                playerPos.Z + math.random(-4, 4)
-            )
-            pcall(function()
-                if item.PrimaryPart then
-                    item:SetPrimaryPartCFrame(CFrame.new(logPosition))
-                else
-                    local mainPart = item:FindFirstChildOfClass("BasePart")
-                    if mainPart then
-                        local offset = logPosition - mainPart.Position
-                        for _, part in pairs(item:GetChildren()) do
-                            if part:IsA("BasePart") then
-                                part.CFrame = part.CFrame + offset
-                            end
-                        end
-                    end
-                end
-            end)
-            task.wait(0.03)
-        end
-    end
-
-    createNotif("AutoFarmLogs", "Collected " .. logsFound .. " Logs from AutoLogFarm", 3)
-    return logsFound > 0
 end
 
 -- Toggle หลัก
@@ -874,7 +811,6 @@ Tabs.Auto:Toggle({
         autoFarmEnabled = state
 
         if state then
-            createNotif("AutoFarmLogs", "AutoFarm Started", 2)
             if teleportToAirAndAnchor() then
                 task.wait(1)
                 if teleportAllTreesToPlayer() then
@@ -883,20 +819,14 @@ Tabs.Auto:Toggle({
                 end
             end
         else
-            createNotif("AutoFarmLogs", "AutoFarm Stopped!", 2)
             if clickConnection then
                 clickConnection:Disconnect()
                 clickConnection = nil
             end
             unanchorPlayer()
-            task.spawn(function()
-                task.wait(0.5)
-                teleportAllLogsToPlayer()
-            end)
         end
     end
 })
-
 
 Tabs.Auto:Section({ Title = "Safe Campfire", Icon = "flame" })
 
