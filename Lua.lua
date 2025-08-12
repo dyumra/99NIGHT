@@ -566,6 +566,11 @@ Tabs.Fly = Window:Tab({
     Icon = "user",
     Desc = "Stellar"
 })
+Tabs.Hitbox = Window:Tab({
+    Title = "Hitbox",
+    Icon = "target",
+    Desc = "Stellar"
+})
 Tabs.Combat = Window:Tab({
     Title = "Combat",
     Icon = "sword",
@@ -986,13 +991,69 @@ coroutine.wrap(function()
     end
 end)()
 
+Tabs.Tp:Section({ Title = "Scan Map", Icon = "map" })
+
+Tabs.Tp:Toggle({
+    Title = "Scan Map (Essential)",
+    Default = false,
+    Callback = function(state)
+        getgenv().scan_map = state
+
+        if not state then
+            -- ปิด scan map แล้ว teleport กลับด้วย tp1()
+            if type(tp1) == "function" then
+                tp1()
+            end
+            return
+        end
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            local map = workspace:FindFirstChild("Map")
+            if not map then return end
+
+            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+            if not foliage then return end
+
+            while getgenv().scan_map do
+                local trees = {}
+                for _, obj in ipairs(foliage:GetChildren()) do
+                    if obj.Name == "Small Tree" and obj:IsA("Model") then
+                        local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                        if trunk then
+                            table.insert(trees, trunk)
+                        end
+                    end
+                end
+
+                for _, trunk in ipairs(trees) do
+                    if not getgenv().scan_map then break end
+                    if trunk and trunk.Parent then
+                        local treeCFrame = trunk.CFrame
+                        local rightVector = treeCFrame.RightVector
+                        local targetPosition = treeCFrame.Position + rightVector * 69
+                        hrp.CFrame = CFrame.new(targetPosition)
+                        task.wait(0.01)
+                    end
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+})
+
 Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Button({
     Title = "Teleport to Campfire",
     Locked = false,
     Callback = function()
-        tp1()
+        tp1() -- สมมติฟังก์ชันนี้มีอยู่แล้ว
     end
 })
 
@@ -1000,10 +1061,78 @@ Tabs.Tp:Button({
     Title = "Teleport to Stronghold",
     Locked = false,
     Callback = function()
-        tp2()
+        tp2() -- สมมติฟังก์ชันนี้มีอยู่แล้ว
     end
 })
 
+Tabs.Tp:Button({
+    Title = "Teleport to Safe Zone",
+    Callback = function()
+        if not workspace:FindFirstChild("SafeZonePart") then
+            local createpart = Instance.new("Part")
+            createpart.Name = "SafeZonePart"
+            createpart.Size = Vector3.new(50, 50, 50)
+            createpart.Position = Vector3.new(0, 105, 0)
+            createpart.Anchored = true
+            createpart.CanCollide = false
+            createpart.Transparency = 0.8
+            createpart.Color = Color3.fromRGB(255, 255, 255)
+            createpart.Parent = workspace
+        end
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(0, 110, 0)
+    end
+})
+
+Tabs.Tp:Button({
+    Title = "Teleport to Trader (Bunny Foot)",
+    Callback = function()
+        local pos = Vector3.new(-37.08, 3.98, -16.33)
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(pos)
+    end
+})
+
+Tabs.Tp:Section({ Title = "Tree", Icon = "tree-deciduous" })
+
+Tabs.Tp:Button({
+    Title = "Teleport to Random Tree",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart", 3)
+        if not hrp then return end
+
+        local map = workspace:FindFirstChild("Map")
+        if not map then return end
+
+        local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+        if not foliage then return end
+
+        local trees = {}
+        for _, obj in ipairs(foliage:GetChildren()) do
+            if obj.Name == "Small Tree" and obj:IsA("Model") then
+                local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                if trunk then
+                    table.insert(trees, trunk)
+                end
+            end
+        end
+
+        if #trees > 0 then
+            local trunk = trees[math.random(1, #trees)]
+            local treeCFrame = trunk.CFrame
+            local rightVector = treeCFrame.RightVector
+            local targetPosition = treeCFrame.Position + rightVector * 3
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+})
 
 Tabs.Tp:Section({ Title = "Children", Icon = "eye" })
 
@@ -1947,3 +2076,94 @@ Tabs.More:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Somtank"))()
     end
 })
+
+-- ตั้งค่าหลัก
+local hitboxSettings = {
+    All = false,
+    Alien = false,
+    Wolf = false,
+    Bunny = false,
+    Cultist = false,
+    Bear = false,
+    Show = false,
+    Size = 20
+}
+
+-- ตารางประเภทศัตรู (เพิ่ม/ลด ได้ง่าย)
+local enemyKeywords = {
+    Alien = {"alien", "alien elite"},
+    Wolf = {"wolf", "alpha"},
+    Bunny = {"bunny"},
+    Bear = {"bear", "polar bear"},
+    Cultist = {"cultist", "cross", "crossbow cultist"},
+}
+
+-- ฟังก์ชันตรวจสอบว่าชื่อมีคำที่อยู่ในตารางหรือไม่
+local function nameMatches(name, keywords)
+    for _, keyword in ipairs(keywords) do
+        if name:find(keyword) then
+            return true
+        end
+    end
+    return false
+end
+
+-- อัพเดต Hitbox ของโมเดล
+local function updateHitboxForModel(model)
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local lowerName = model.Name:lower()
+
+    local shouldResize = false
+    if hitboxSettings.All then
+        for _, keywords in pairs(enemyKeywords) do
+            if nameMatches(lowerName, keywords) then
+                shouldResize = true
+                break
+            end
+        end
+    else
+        for key, keywords in pairs(enemyKeywords) do
+            if hitboxSettings[key] and nameMatches(lowerName, keywords) then
+                shouldResize = true
+                break
+            end
+        end
+    end
+
+    if shouldResize then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.8 or 1
+        root.Color = Color3.fromRGB(255, 0, 0)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+    end
+end
+
+-- ใช้ GetChildren เพื่อประสิทธิภาพ และอัพเดตเฉพาะที่จำเป็น
+task.spawn(function()
+    while task.wait(1) do -- ปรับเป็น 1 วิ แทน 2 วิ เพื่อความไว
+        for _, obj in ipairs(workspace:GetChildren()) do
+            if obj:IsA("Model") and obj:FindFirstChild("HumanoidRootPart") then
+                updateHitboxForModel(obj)
+            end
+        end
+    end
+end)
+
+-- UI
+Tabs.Hitbox:Section({ Title = "Hitbox", Icon = "target" })
+
+Tabs.Hitbox:Slider({
+    Title = "Hitbox Size",
+    Value = {Min = 2, Max = 300, Default = 20},
+    Step = 1,
+    Callback = function(val) hitboxSettings.Size = val end
+})
+Tabs.Hitbox:Toggle({Title="Show Hitbox", Default=false, Callback=function(val) hitboxSettings.Show = val end})
+Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All = val end})
+Tabs.Hitbox:Toggle({Title="Expand Alien Hitbox", Default=false, Callback=function(val) hitboxSettings.Alien = val end})
+Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function(val) hitboxSettings.Bear = val end})
+Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf = val end})
+Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny = val end})
+Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist = val end})
