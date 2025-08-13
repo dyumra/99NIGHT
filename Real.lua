@@ -25,8 +25,8 @@ local toolsDamageIDs = {
 -- auto food
 
 local autoFeedToggle = false
-local selectedFood = "Carrot"
-local hungerThreshold = 75
+local selectedFood = "Apple"
+local hungerThreshold = 50
 local alwaysFeedEnabledItems = {}
 local alimentos = {
     "Apple",
@@ -634,8 +634,9 @@ Tabs.Main:Section({ Title = "Auto Feed", Icon = "utensils" })
 Tabs.Main:Dropdown({
     Title = "Select Food",
     Desc = "Choose the food",
-    Value = alimentos,
-    Multi = true,
+    Values = alimentos,
+    Value = selectedFood,
+    Multi = false,
     Callback = function(value)
         selectedFood = value
     end
@@ -645,7 +646,7 @@ Tabs.Main:Input({
     Title = "Feed %",
     Desc = "Eat when hunger reaches this %",
     Value = tostring(hungerThreshold),
-    Placeholder = "Ex: 75",
+    Placeholder = "Ex: 50",
     Numeric = true,
     Callback = function(value)
         local n = tonumber(value)
@@ -1022,7 +1023,7 @@ Tabs.Tp:Toggle({
             while getgenv().scan_map do
                 local trees = {}
                 for _, obj in ipairs(foliage:GetChildren()) do
-                    if obj.Name == "Small Tree" and obj:IsA("Model") then
+                    if obj.Name == "StoneSmall" and obj:IsA("Model") then
                         local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
                         if trunk then
                             table.insert(trees, trunk)
@@ -1805,23 +1806,32 @@ Tabs.Misc:Section({ Title = "Visual", Icon = "lightbulb" })
 local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 
-local oldAmbient = Lighting.Ambient
-local oldBrightness = Lighting.Brightness
-local oldClockTime = Lighting.ClockTime
-
 local fullBrightConnection
+local oldAmbient, oldBrightness, oldClockTime
+local isFirstRun = true
 
 Tabs.Misc:Toggle({
     Title = "Full-Bright",
     Default = false,
     Callback = function(state)
+        -- ป้องกัน Callback แรกที่มาจากค่า Default
+        if isFirstRun then
+            isFirstRun = false
+            return
+        end
+
         if state then
+            -- เก็บค่าของเดิม
+            oldAmbient = Lighting.Ambient
+            oldBrightness = Lighting.Brightness
+            oldClockTime = Lighting.ClockTime
+
             -- เปิด FullBright
             Lighting.Ambient = Color3.new(1, 1, 1)
             Lighting.Brightness = 10
             Lighting.ClockTime = 14
 
-            -- เริ่มตรวจสอบตลอดเวลา
+            -- ตรวจสอบให้คงค่า FullBright
             fullBrightConnection = RunService.RenderStepped:Connect(function()
                 if Lighting.ClockTime ~= 14 then
                     Lighting.ClockTime = 14
@@ -1834,15 +1844,17 @@ Tabs.Misc:Toggle({
                 end
             end)
         else
-            -- ปิด FullBright และหยุดตรวจสอบ
+            -- ปิด FullBright และคืนค่าของเดิม
             if fullBrightConnection then
                 fullBrightConnection:Disconnect()
                 fullBrightConnection = nil
             end
 
-            Lighting.Ambient = oldAmbient
-            Lighting.Brightness = oldBrightness
-            Lighting.ClockTime = oldClockTime
+            if oldAmbient and oldBrightness and oldClockTime then
+                Lighting.Ambient = oldAmbient
+                Lighting.Brightness = oldBrightness
+                Lighting.ClockTime = oldClockTime
+            end
         end
     end
 })
@@ -2055,7 +2067,7 @@ Tabs.Misc:Button({
                 end
             end
         end)
-        print("✅ FPS Boost Applied")
+        print("[Roblox] FPS Boost Applied")
     end
 })
 
@@ -2063,12 +2075,14 @@ Tabs.Misc:Button({
 Tabs.Misc:Button({
     Title = "FPS Boost (By DYHUB)",
     Callback = function()
+		print("[DYHUB] FPS Boost Applied")
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
     end
 })
 
 -- Section ในแท็บ More
 Tabs.More:Section({ Title = "Auto Farm", Icon = "gem" })
+Tabs.More:Section({ Title = "Feature: Auto Exe, Auto Server-Hop", Icon = "info" })
 
 -- ปุ่มในแท็บ More
 Tabs.More:Button({
