@@ -66,6 +66,11 @@ local selectedEquipmentItems = {}
 local campfireFuelItems = {"Log", "Coal", "Fuel Canister", "Oil Barrel", "Biofuel"}
 local campfireDropPos = Vector3.new(0, 19, 0)
 
+-- auto upgrade workbench 
+
+local WorkbenchItems = {"Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine"}
+local WorkbenchDropPos = Vector3.new(1.85, 4.30, -3.65)
+
 -- auto cook
 
 local autocookItems = {"Morsel", "Steak"}
@@ -905,6 +910,52 @@ Tabs.Auto:Toggle({
     end
 })
 
+Tabs.Auto:Section({ Title = "Auto Upgrade Workbench", Icon = "hammer" })
+
+local autoUpgradeWorkbenchEnabled = false
+
+Tabs.Auto:Dropdown({
+    Title = "Auto Upgrade Workbench",
+    Desc = "Choose the items",
+    Values = WorkbenchItems,
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        for _, itemName in ipairs(WorkbenchItems) do
+            alwaysFeedEnabledItems[itemName] = table.find(options, itemName) ~= nil
+        end
+    end
+})
+
+Tabs.Auto:Toggle({
+    Title = "Auto Upgrade Workbench",
+    Value = false,
+    Callback = function(checked)
+        autoUpgradeWorkbenchEnabled = checked
+        if checked then
+            task.spawn(function()
+                while autoUpgradeWorkbenchEnabled do
+                    for itemName, enabled in pairs(alwaysFeedEnabledItems) do
+                        if enabled then
+                            local pulledCount = 0
+                            for _, item in ipairs(workspace:WaitForChild("Items"):GetChildren()) do
+                                if item.Name == itemName then
+                                    moveItemToPos(item, WorkbenchDropPos)
+                                    pulledCount += 1
+                                    if pulledCount >= 2 then
+                                        break -- ดึงครบ 10 ชิ้นแล้ว ออกจาก loop
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    task.wait(1.5) -- รอ 3 วิ ก่อนดึงรอบต่อไป
+                end
+            end)
+        end
+    end
+})
+
 Tabs.Auto:Section({ Title = "Auto Upgrade Campfire", Icon = "flame" })
 
 local autoUpgradeCampfireEnabled = false
@@ -937,14 +988,14 @@ Tabs.Auto:Toggle({
                                 if item.Name == itemName then
                                     moveItemToPos(item, campfireDropPos)
                                     pulledCount += 1
-                                    if pulledCount >= 10 then
+                                    if pulledCount >= 2 then
                                         break -- ดึงครบ 10 ชิ้นแล้ว ออกจาก loop
                                     end
                                 end
                             end
                         end
                     end
-                    task.wait(3) -- รอ 3 วิ ก่อนดึงรอบต่อไป
+                    task.wait(1.5) -- รอ 3 วิ ก่อนดึงรอบต่อไป
                 end
             end)
         end
@@ -1074,7 +1125,7 @@ Tabs.Tp:Button({
             createpart.Size = Vector3.new(50, 50, 50)
             createpart.Position = Vector3.new(0, 105, 0)
             createpart.Anchored = true
-            createpart.CanCollide = false
+            createpart.CanCollide = true
             createpart.Transparency = 0.8
             createpart.Color = Color3.fromRGB(255, 255, 255)
             createpart.Parent = workspace
