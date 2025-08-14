@@ -297,7 +297,7 @@ local function tp2()
         if destination and destination:IsA("BasePart") then
             local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                hrp.CFrame = destination.CFrame + Vector3.new(0, 5, 0)
+                hrp.CFrame = destination.CFrame + Vector3.new(0, 5, 1)
             end
         end
     end
@@ -814,7 +814,7 @@ end
 
 -- Toggle หลัก
 Tabs.Auto:Toggle({
-    Title = "Auto Farm Log (Fix)",
+    Title = "Auto Farm Log (Upgrade)",
     Default = false,
     Callback = function(state)
         autoTreeFarmActive = state
@@ -850,7 +850,7 @@ Tabs.Auto:Toggle({
         getgenv().Lowhp = state
         if state then
             task.spawn(function()
-                local campPosition = Vector3.new(0, 8, 0)
+                local campPosition = Vector3.new(0, 5, 0)
                 while getgenv().Lowhp do
                     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                     local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -894,7 +894,7 @@ Tabs.Auto:Toggle({
                         local hour = tonumber(string.split(lighting.TimeOfDay, ":")[1])
                         if hour then
                             if not didTeleportTonight and hour >= 0 and hour < 5 then
-                                hrp.CFrame = CFrame.new(Vector3.new(0, 8, 0))
+                                hrp.CFrame = CFrame.new(Vector3.new(0, 5, 0))
                                 didTeleportTonight = true
                             end
                             if hour >= 5 then
@@ -995,7 +995,7 @@ Tabs.Auto:Toggle({
                             end
                         end
                     end
-                    task.wait(1.5) -- รอ 3 วิ ก่อนดึงรอบต่อไป
+                    task.wait(0.45) -- รอ 3 วิ ก่อนดึงรอบต่อไป
                 end
             end)
         end
@@ -1074,7 +1074,7 @@ Tabs.Tp:Toggle({
             while getgenv().scan_map do
                 local trees = {}
                 for _, obj in ipairs(foliage:GetChildren()) do
-                    if obj.Name == "StoneSmall" and obj:IsA("Model") then
+                    if obj.Name == "TreeBig2" and obj:IsA("Model") then
                         local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
                         if trunk then
                             table.insert(trees, trunk)
@@ -1087,12 +1087,28 @@ Tabs.Tp:Toggle({
                     if trunk and trunk.Parent then
                         local treeCFrame = trunk.CFrame
                         local rightVector = treeCFrame.RightVector
-                        local targetPosition = treeCFrame.Position + rightVector * 69
+                        local targetPosition = treeCFrame.Position + rightVector * 69 + Vector3.new(0, 350, 0) -- ขยับขึ้น 10 เพื่ออยู่บนอากาศ
+                        
+                        -- เทเลพอร์ตผู้เล่น
                         hrp.CFrame = CFrame.new(targetPosition)
+
+                        -- สร้าง part ใต้เท้า
+                        local footPart = Instance.new("Part")
+                        footPart.Size = Vector3.new(10, 1, 10)
+                        footPart.Anchored = true
+                        footPart.CanCollide = true
+                        footPart.Transparency = 1
+                        footPart.BrickColor = BrickColor.new("Bright yellow")
+                        footPart.CFrame = CFrame.new(targetPosition - Vector3.new(0, 3, 0)) -- ต่ำกว่า HRP
+                        footPart.Parent = workspace
+
+                        -- ลบหลัง 1 วินาที
+                        game.Debris:AddItem(footPart, 1)
+
                         task.wait(0.01)
                     end
                 end
-                task.wait(0.5)
+                task.wait(0.1)
             end
         end)
     end
@@ -1123,7 +1139,7 @@ Tabs.Tp:Button({
             local createpart = Instance.new("Part")
             createpart.Name = "SafeZonePart"
             createpart.Size = Vector3.new(50, 50, 50)
-            createpart.Position = Vector3.new(0, 105, 0)
+            createpart.Position = Vector3.new(0, 350, 0)
             createpart.Anchored = true
             createpart.CanCollide = true
             createpart.Transparency = 0.8
@@ -1133,7 +1149,7 @@ Tabs.Tp:Button({
         local player = game:GetService("Players").LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local hrp = character:WaitForChild("HumanoidRootPart")
-        hrp.CFrame = CFrame.new(0, 110, 0)
+        hrp.CFrame = CFrame.new(0, 360, 0)
     end
 })
 
