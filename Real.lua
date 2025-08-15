@@ -68,7 +68,7 @@ local campfireDropPos = Vector3.new(0, 19, 0)
 
 -- auto upgrade workbench 
 
-local WorkbenchItems = {"Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine"}
+local WorkbenchItems = {"Log", "Metal Chair", "Chair", "Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine"}
 local WorkbenchDropPos = Vector3.new(1.85, 4.30, -3.65)
 
 -- auto cook
