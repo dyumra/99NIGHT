@@ -4,6 +4,8 @@ if not game:IsLoaded() then repeat task.wait() until game:IsLoaded() end
 if getgenv().RunScript == true then return end
 getgenv().RunScript = true
 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/hztest2.lua"))()
+
 -- ตั้งค่า queue_on_teleport ให้โหลดสคริปต์หลัก
 local queueScript = [[
 loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Lua.lua'))()
