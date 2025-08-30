@@ -2153,16 +2153,9 @@ Tabs.More:Section({ Title = "Feature: Auto Exe, Auto Server-Hop", Icon = "info" 
 
 -- ปุ่มในแท็บ More
 Tabs.More:Button({
-    Title = "Auto Farm (All Chest)",
+    Title = "Auto Farm (Upgrade)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Allchest.lua"))()
-    end
-})
-
-Tabs.More:Button({
-    Title = "Auto Farm (Diamond Chest)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/DiamondChest.lua"))()
     end
 })
 
