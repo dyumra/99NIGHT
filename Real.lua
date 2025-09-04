@@ -2153,9 +2153,9 @@ Tabs.More:Section({ Title = "Feature: Auto Exe, Auto Server-Hop", Icon = "info" 
 
 -- ปุ่มในแท็บ More
 Tabs.More:Button({
-    Title = "Auto Farm (Upgrade)",
+    Title = "Auto Farm (Cào Mod)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Allchest.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/dyhub99night.lua"))()
     end
 })
 
