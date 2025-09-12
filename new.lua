@@ -1,3 +1,5 @@
+-- V1182
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -87,6 +89,7 @@ end
 
 -- combat
 
+local AutoPlantToggle = false
 local killAuraToggle = false
 local chopAuraToggle = false
 local auraRadius = 50
@@ -104,7 +107,7 @@ local toolsDamageIDs = {
 
 local autoFeedToggle = false
 local selectedFood = {}
-local hungerThreshold = 50
+local hungerThreshold = 75
 local alwaysFeedEnabledItems = {}
 local alimentos = {
     "Apple",
@@ -127,11 +130,11 @@ local ie = {
     "MedKit", "Old Car Engine", "Old Flashlight", "Old Radio", "Revolver", "Revolver Ammo", "Rifle", "Rifle Ammo",
     "Morsel", "Sheet Metal", "Steak", "Tyre", "Washing Machine", "Cultist Gem", "Gem of the Forest Fragment"
 }
-local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist", "Alien"}
+local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist", "Alien", "Alien Elite"}
 
 -- bring
 
- local junkItems = {"Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine", "Cultist Gem", "Gem of the Forest Fragment"}
+ local junkItems = {"Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine"}
 local selectedJunkItems = {}
 local fuelItems = {"Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel"}
 local selectedFuelItems = {}
@@ -366,7 +369,7 @@ local selectedScrapItem = nil
 local autoScrapItemsEnabled = false
 -- auto cook
 
-local autocookItems = {"Morsel", "Steak", "Ribs", "Salmon", "Mackerel"}
+local autocookItems = {"Morsel", "Steak", "}
 local autoCookEnabledItems = {}
 local autoCookEnabled = false
 
@@ -392,6 +395,20 @@ end
 local function unequipTool(tool)
     if tool then
         ReplicatedStorage:WaitForChild("RemoteEvents").UnequipItemHandle:FireServer("FireAllClients", tool)
+    end
+end
+
+local function autoplant()
+    while AutoPlantToggle do
+        local args = {
+            Instance.new("Model"),
+            Vector3.new(-41.2053, 1.0633, 29.2236)
+        }
+        game:GetService("ReplicatedStorage")
+            :WaitForChild("RemoteEvents")
+            :WaitForChild("RequestPlantItem")
+            :InvokeServer(unpack(args))
+        task.wait(1)
     end
 end
 
@@ -442,7 +459,7 @@ local function chopAuraLoop()
                 if map then
                     if map:FindFirstChild("Foliage") then
                         for _, obj in ipairs(map.Foliage:GetChildren()) do
-                            if obj:IsA("Model") and (obj.Name == "Small Tree" or obj.Name == "Snowy Small Tree") then
+                            if obj:IsA("Model") and obj.Name == "Small Tree" then
                                 table.insert(trees, obj)
                             end
                         end
@@ -450,6 +467,13 @@ local function chopAuraLoop()
                     if map:FindFirstChild("Landmarks") then
                         for _, obj in ipairs(map.Landmarks:GetChildren()) do
                             if obj:IsA("Model") and obj.Name == "Small Tree" then
+                                table.insert(trees, obj)
+                            end
+                        end
+                    end
+                    if map:FindFirstChild("Foliage") then
+                        for _, obj in ipairs(map.Landmarks:GetChildren()) do
+                            if obj:IsA("Model") and obj.Name == "Snowy Small Tree" then
                                 table.insert(trees, obj)
                             end
                         end
@@ -862,7 +886,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     Icon = "rbxassetid://104487529937663", 
     Author = "99 Night in The Forest | Free Version",
-    Folder = "DYHUB | 99NITF | NEW",
+    Folder = "DYHUB | 99NIGHT V2",
     Size = UDim2.fromOffset(500, 350),
     Transparent = getgenv().TransparencyEnabled,
     Theme = "Dark",
@@ -938,13 +962,14 @@ Window:EditOpenButton({
 })
 
 local Tabs = {}
+
 Tabs.Info = Window:Tab({
     Title = "Information",
-    Icon = "badge-info",
+    Icon = "info",
     Desc = "DYHUB"
 })
 
-Tabs.MainDivider = Window:Divider(),
+-- A
 
 Tabs.Main = Window:Tab({
     Title = "Main",
@@ -962,7 +987,7 @@ Tabs.br = Window:Tab({
     Desc = "DYHUB"
 })
 
-Tabs.CombatDivider = Window:Divider(),
+-- A
 
 Tabs.Combat = Window:Tab({
     Title = "Combat",
@@ -985,20 +1010,20 @@ Tabs.Tp = Window:Tab({
     Desc = "DYHUB"
 })
 
-Tabs.MiscDivider = Window:Divider(),
+-- A
 
 Tabs.Hitbox = Window:Tab({
     Title = "Hitbox",
     Icon = "target",
-    Desc = "Stellar"
+    Desc = "DYHUB"
 })
 Tabs.More = Window:Tab({
     Title = "Farm",
     Icon = "crown",
-    Desc = "Stellar"
+    Desc = "DYHUB"
 })
 
-Tabs.SettingsDivider = Window:Divider(),
+-- 
 
 Tabs.Vision = Window:Tab({
     Title = "Settings",
@@ -1038,13 +1063,26 @@ Tabs.Combat:Toggle({
     end
 })
 
+Tabs.Combat:Section({ Title = "Chop Settings", Icon = "settings" })
+
+Tabs.Combat:Toggle({
+    Title = "Auto Plant",
+    Value = false,
+    Callback = function(state)
+        AutoPlantToggle = state
+        if state then
+            task.spawn(autoplant)
+        end
+    end
+})
+
 Tabs.Combat:Section({ Title = "Settings", Icon = "settings" })
 
 Tabs.Combat:Slider({
     Title = "Aura Radius",
-    Value = { Min = 50, Max = 1000, Default = 50 },
+    Value = { Min = 50, Max = 800, Default = 50 },
     Callback = function(value)
-        auraRadius = math.clamp(value, 10, 1000)
+        auraRadius = math.clamp(value, 10, 800)
     end
 })
 
@@ -1062,7 +1100,7 @@ Tabs.Main:Dropdown({
 })
 
 Tabs.Main:Input({
-    Title = "Feed %",
+    Title = "Feed Amount",
     Desc = "Eat when hunger reaches this %",
     Value = tostring(hungerThreshold),
     Placeholder = "Ex: 50",
@@ -1093,78 +1131,6 @@ Tabs.Main:Toggle({
                     if ghn() <= hungerThreshold then
                         feed(selectedFood)
                     end
-                end
-            end)
-        end
-    end
-})
-
-Tabs.Auto:Section({ Title = "Safe Campfire", Icon = "flame" })
-
-getgenv().Lowhp = false
-getgenv().AutoCampAtNight = false
-
-Tabs.Auto:Toggle({
-    Title = "Auto to Campfire (Low HP)",
-    Default = false,
-    Callback = function(state)
-        getgenv().Lowhp = state
-        if state then
-            task.spawn(function()
-                local campPosition = Vector3.new(0, 5, 0)
-                while getgenv().Lowhp do
-                    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    local hrp = character:FindFirstChild("HumanoidRootPart")
-                    if humanoid and hrp then
-                        local healthPercent = humanoid.Health / humanoid.MaxHealth
-                        local distance = (hrp.Position - campPosition).Magnitude
-
-                        if healthPercent <= 0.4 and distance > 33 then
-                            -- ถ้าเลือดต่ำกว่า 40% และอยู่ไกล camp เกิน 33 stud ให้วาร์ปกลับ
-                            hrp.CFrame = CFrame.new(campPosition)
-                            task.wait(3)  -- รอ 3 วิ ก่อนเช็คใหม่
-                        else
-                            -- กรณีอื่นๆ รอเช็คใหม่
-                            task.wait(1)
-                        end
-                    else
-                        task.wait(1)
-                    end
-                end
-            end)
-        end
-    end
-})
-
-
-Tabs.Auto:Toggle({
-    Title = "Auto to Campfire (At Night - Once per Night)",
-    Default = false,
-    Callback = function(state)
-        getgenv().AutoCampAtNight = state
-        if state then
-            task.spawn(function()
-                local didTeleportTonight = false
-                while getgenv().AutoCampAtNight do
-                    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    local hrp = character:FindFirstChild("HumanoidRootPart")
-                    local lighting = game:GetService("Lighting")
-
-                    if hrp and lighting then
-                        local hour = tonumber(string.split(lighting.TimeOfDay, ":")[1])
-                        if hour then
-                            if not didTeleportTonight and hour >= 0 and hour < 5 then
-                                hrp.CFrame = CFrame.new(Vector3.new(0, 5, 0))
-                                didTeleportTonight = true
-                            end
-                            if hour >= 5 then
-                                didTeleportTonight = false
-                            end
-                        end
-                    end
-
-                    task.wait(1)
                 end
             end)
         end
@@ -2175,7 +2141,8 @@ Tabs.Main:Toggle({
     end
 })
 
-Tabs.Vision:Section({ Title = "Vision", Icon = "lightbulb" })
+Tabs.Vision:Section({ Title = "Vision", Icon = "eye" })
+
 -- Variable
 
 -- Store original parents for restoration
@@ -2223,7 +2190,7 @@ end
 storeColorCorrectionParent()
 
 Tabs.Vision:Toggle({
-    Title = "Disable Fog",
+    Title = "Disable Fog (Auto)",
     Desc = "",
     Value = false,
     Callback = function(state)
@@ -2340,7 +2307,7 @@ Tabs.Vision:Toggle({
     end
 })
 
-Tabs.Vision:Section({ Title = "Visual", Icon = "sparkle" })
+Tabs.Vision:Section({ Title = "Viusal", Icon = "lightbulb" })
 
 Tabs.Vision:Toggle({
     Title = "Full Bright",
@@ -2351,7 +2318,7 @@ Tabs.Vision:Toggle({
         
         if state then
             -- Enable fullbright
-            Lighting.Brightness = 3.5
+            Lighting.Brightness = 2
             Lighting.Ambient = Color3.new(1, 1, 1)
             Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
             Lighting.ShadowSoftness = 0
@@ -2369,6 +2336,328 @@ Tabs.Vision:Toggle({
     end
 })
 
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local oldFogStart = Lighting.FogStart
+local oldFogEnd = Lighting.FogEnd
+local oldFogColor = Lighting.FogColor
+
+local noFogConnection
+
+Tabs.Vision:Toggle({
+    Title = "No Fog",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- ปิดหมอก
+            Lighting.FogStart = 0
+            Lighting.FogEnd = 1e10
+            Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+
+            -- ตรวจสอบตลอดว่าไม่มีใครเปลี่ยน
+            noFogConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.FogStart ~= 0 then
+                    Lighting.FogStart = 0
+                end
+                if Lighting.FogEnd ~= 1e10 then
+                    Lighting.FogEnd = 1e10
+                end
+                if Lighting.FogColor ~= Color3.fromRGB(255, 255, 255) then
+                    Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+                end
+            end)
+        else
+            -- ปิด toggle และคืนค่าหมอกเดิม
+            if noFogConnection then
+                noFogConnection:Disconnect()
+                noFogConnection = nil
+            end
+            Lighting.FogStart = oldFogStart
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogColor = oldFogColor
+        end
+    end
+})
+
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
+vibrantEffect.Name = "VibrantEffect"
+vibrantEffect.Saturation = 0.9      -- สด 200%
+vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
+vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
+vibrantEffect.Enabled = false
+vibrantEffect.Parent = Lighting
+
+Tabs.Vision:Toggle({
+    Title = "Vibrant Colors",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิดโหมดสีสด
+            Lighting.Ambient = Color3.fromRGB(180, 180, 180)
+            Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
+            Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
+            Lighting.ColorShift_Bottom = Color3.fromRGB(200, 240, 255)
+            vibrantEffect.Enabled = true
+        else
+            -- ปิดโหมด กลับค่าดั้งเดิม
+            Lighting.Ambient = Color3.new(0, 0, 0)
+            Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Top = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
+            vibrantEffect.Enabled = false
+        end
+    end
+})
+
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local Camera = workspace.CurrentCamera
+
+-- Settings
+local showFPS, showPing = true, true
+local fpsCounter, fpsLastUpdate, fpsValue = 0, tick(), 0
+
+-- Drawing setup
+local function createText(yOffset)
+    local textObj = Drawing.new("Text")
+    textObj.Size = 16
+    textObj.Position = Vector2.new(Camera.ViewportSize.X - 110, yOffset)
+    textObj.Color = Color3.fromRGB(0, 255, 0)
+    textObj.Center = false
+    textObj.Outline = true
+    textObj.Visible = true
+    return textObj
+end
+
+local fpsText = createText(10)
+local msText = createText(30)
+
+-- Adjust position when screen size changes
+Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+    fpsText.Position = Vector2.new(Camera.ViewportSize.X - 110, 10)
+    msText.Position = Vector2.new(Camera.ViewportSize.X - 110, 30)
+end)
+
+-- Main update loop
+RunService.RenderStepped:Connect(function()
+    fpsCounter += 1
+
+    if tick() - fpsLastUpdate >= 1 then
+        fpsValue = fpsCounter
+        fpsCounter = 0
+        fpsLastUpdate = tick()
+
+        -- FPS Display
+        if showFPS then
+            fpsText.Text = string.format("FPS: %d", fpsValue)
+            fpsText.Color = fpsValue >= 50 and Color3.fromRGB(0, 255, 0)
+                or fpsValue >= 30 and Color3.fromRGB(255, 165, 0)
+                or Color3.fromRGB(255, 0, 0)
+            fpsText.Visible = true
+        else
+            fpsText.Visible = false
+        end
+
+        -- Ping Display
+        if showPing then
+            local pingStat = Stats.Network.ServerStatsItem["Data Ping"]
+            local ping = pingStat and math.floor(pingStat:GetValue()) or 0
+            local color, label = Color3.fromRGB(0, 255, 0), "Ping: "
+
+            if ping > 120 then
+                color, label = Color3.fromRGB(255, 0, 0), "Ew Wifi Ping: "
+            elseif ping > 60 then
+                color = Color3.fromRGB(255, 165, 0)
+            end
+
+            msText.Text = string.format("%s%d ms", label, ping)
+            msText.Color = color
+            msText.Visible = true
+        else
+            msText.Visible = false
+        end
+    end
+end)
+
+Tabs.Vision:Section({ Title = "Show Status", Icon = "settings-2" })
+
+-- UI Toggles
+Tabs.Vision:Toggle({
+    Title = "Show FPS",
+    Default = true,
+    Callback = function(val)
+        showFPS = val
+        fpsText.Visible = val
+    end
+})
+Tabs.Vision:Toggle({
+    Title = "Show Ping (ms)",
+    Default = true,
+    Callback = function(val)
+        showPing = val
+        msText.Visible = val
+    end
+})
+
+Tabs.Vision:Section({ Title = "Low Graphic", Icon = "user-cog" })
+
+Tabs.Vision:Button({
+    Title = "FPS Boost (By Roblox)",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("[Roblox] FPS Boost Applied")
+    end
+})
+
+-- สร้างแท็บก่อน
+Tabs.Vision:Button({
+    Title = "FPS Boost (By DYHUB)",
+    Callback = function()
+		print("[DYHUB] FPS Boost Applied")
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+    end
+})
+
+-- Section ในแท็บ More
+Tabs.More:Section({ Title = "Auto Farm", Icon = "gem" })
+Tabs.More:Section({ Title = "Feature: Auto Exe, Auto Server-Hop", Icon = "info" })
+
+-- ปุ่มในแท็บ More
+Tabs.More:Button({
+    Title = "Auto Farm (Cào Mod)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/dyhub99night.lua"))()
+    end
+})
+
+-- ตั้งค่าหลัก
+local hitboxSettings = {
+    All = false,
+    Alien = false,
+    Wolf = false,
+    Bunny = false,
+    Cultist = false,
+    Bear = false,
+    Show = false,
+    Size = 20
+}
+
+-- ตารางประเภทศัตรู (เพิ่ม/ลด ได้ง่าย)
+local enemyKeywords = {
+    Alien = {"alien", "alien elite"},
+    Wolf = {"wolf", "alpha"},
+    Bunny = {"bunny"},
+    Bear = {"bear", "polar bear"},
+    Cultist = {"cultist", "cross", "crossbow cultist"},
+}
+
+-- ฟังก์ชันตรวจสอบว่าชื่อมีคำที่อยู่ในตารางหรือไม่
+local function nameMatches(name, keywords)
+    for _, keyword in ipairs(keywords) do
+        if name:find(keyword) then
+            return true
+        end
+    end
+    return false
+end
+
+-- อัพเดต Hitbox ของโมเดล
+local function updateHitboxForModel(model)
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local lowerName = model.Name:lower()
+
+    local shouldResize = false
+    if hitboxSettings.All then
+        for _, keywords in pairs(enemyKeywords) do
+            if nameMatches(lowerName, keywords) then
+                shouldResize = true
+                break
+            end
+        end
+    else
+        for key, keywords in pairs(enemyKeywords) do
+            if hitboxSettings[key] and nameMatches(lowerName, keywords) then
+                shouldResize = true
+                break
+            end
+        end
+    end
+
+    if shouldResize then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.8 or 1
+        root.Color = Color3.fromRGB(255, 0, 0)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+    end
+end
+
+-- ใช้ GetChildren เพื่อประสิทธิภาพ และอัพเดตเฉพาะที่จำเป็น
+task.spawn(function()
+    while task.wait(1) do -- ปรับเป็น 1 วิ แทน 2 วิ เพื่อความไว
+        for _, obj in ipairs(workspace:GetChildren()) do
+            if obj:IsA("Model") and obj:FindFirstChild("HumanoidRootPart") then
+                updateHitboxForModel(obj)
+            end
+        end
+    end
+end)
+
+-- UI
+Tabs.Hitbox:Section({ Title = "Hitbox", Icon = "target" })
+
+Tabs.Hitbox:Slider({
+    Title = "Hitbox Size",
+    Value = {Min = 2, Max = 200, Default = 20},
+    Step = 1,
+    Callback = function(val) hitboxSettings.Size = val end
+})
+Tabs.Hitbox:Toggle({Title="Show Hitbox", Default=false, Callback=function(val) hitboxSettings.Show = val end})
+
+Tabs.Hitbox:Section({ Title = "Hitbox Settings", Icon = "settings-2" })
+
+Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All = val end})
+Tabs.Hitbox:Toggle({Title="Expand Alien Hitbox", Default=false, Callback=function(val) hitboxSettings.Alien = val end})
+Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function(val) hitboxSettings.Bear = val end})
+Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf = val end})
+Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny = val end})
+Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist = val end})
 
 -- Replace the problematic section with this fixed version:
 
@@ -2501,16 +2790,46 @@ LoadDiscordInfo()
 
 Info:Divider()
 Info:Section({ 
-    Title = "DYHUB",
+    Title = "DYHUB Infomation",
     TextXAlignment = "Center",
     TextSize = 17,
 })
 Info:Divider()
 
 local Owner = Info:Paragraph({
-    Title = "Main Owner",
-    Desc = "dyumraisgoodguy",
+    Title = "Main Founder",
+    Desc = "@dyumraisgoodguy",
     Image = "rbxassetid://119789418015420",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+})
+
+local Social = Info:Paragraph({
+    Title = "Social",
+    Desc = "Copy link social media for follow!",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://guns.lol/DYHUB")
+                print("Copied social media link to clipboard!")
+            end,
+        }
+    }
+})
+
+local CoOwner = Info:Paragraph({
+    Title = "DYHUB",
+    Desc = "Developed by dyumra, rhy, oszq",
+    Image = "rbxassetid://104487529937663",
     ImageSize = 30,
     Thumbnail = "",
     ThumbnailSize = 0,
