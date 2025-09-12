@@ -1,4 +1,4 @@
--- V523
+-- V525
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -2359,7 +2359,7 @@ local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("
 vibrantEffect.Name = "VibrantEffect"
 vibrantEffect.Saturation = 0.8      -- สด 200%
 vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
-vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
+vibrantEffect.Brightness = 0.4      -- เพิ่มความสว่างเล็กน้อย
 vibrantEffect.Enabled = false
 vibrantEffect.Parent = Lighting
 
@@ -2433,18 +2433,26 @@ Tabs.Vision:Button({
 Tabs.Vision:Button({
     Title = "FPS Boost (By DYHUB)",
     Callback = function()
-		print("[DYHUB] FPS Boost Applied")
+        -- แค่กดปุ่มถึงจะรันโค้ดนี้
+        print("[DYHUB] FPS Boost Applied")
+
+        -- ปรับ Lighting
         local lighting1 = game:GetService("Lighting")
-        lighting1.Brightness = 0
         lighting1.FogEnd = 1000000
-        lighting1.GlobalShadows = false
-        lighting1.EnvironmentDiffuseScale = 0
-        lighting1.EnvironmentSpecularScale = 0
-        lighting1.ClockTime = 14
-        lighting1.OutdoorAmbient = Color3.new(0, 0, 0)
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+
+        -- โหลดและรันโค้ดจาก URL เฉพาะตอนกดปุ่ม
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+        end)
+
+        if success then
+            print("[DYHUB] Script loaded successfully")
+        else
+            warn("[DYHUB] Failed to load script: " .. tostring(err))
+        end
     end
 })
+
 
 local RunService = game:GetService("RunService")
 local Stats = game:GetService("Stats")
