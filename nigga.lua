@@ -1,4 +1,4 @@
--- V526
+-- V527
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -2348,6 +2348,7 @@ RunService.Heartbeat:Connect(function()
         if Lighting.FogStart ~= 100000 or Lighting.FogEnd ~= 100000 then
             Lighting.FogStart = 100000
             Lighting.FogEnd = 100000
+            print("[DYHUB] hi 3")
         end
     end
 end)
@@ -2381,6 +2382,7 @@ Tabs.Vision:Toggle({
             Lighting.ColorShift_Top = Color3.new(0, 0, 0)
             Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
             vibrantEffect.Enabled = false
+            print("[DYHUB] hi 2")
         end
     end
 })
@@ -2393,7 +2395,7 @@ Tabs.Vision:Button({
         pcall(function()
             settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
             local lighting = game:GetService("Lighting")
-            lighting.Brightness = 0
+            lighting.Brightness = 1
             lighting.FogEnd = 1000000
             lighting.GlobalShadows = false
             lighting.EnvironmentDiffuseScale = 0
@@ -2436,11 +2438,7 @@ Tabs.Vision:Button({
         -- แค่กดปุ่มถึงจะรันโค้ดนี้
         print("[DYHUB] FPS Boost Applied")
 
-        -- ปรับ Lighting
-        local lighting1 = game:GetService("Lighting")
-        lighting1.FogEnd = 1000000
-
-        -- โหลดและรันโค้ดจาก URL เฉพาะตอนกดปุ่ม
+        
         local success, err = pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
         end)
@@ -2449,6 +2447,7 @@ Tabs.Vision:Button({
             print("[DYHUB] Script loaded successfully")
         else
             warn("[DYHUB] Failed to load script: " .. tostring(err))
+            print("[DYHUB] hi 1")
         end
     end
 })
