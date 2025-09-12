@@ -866,7 +866,6 @@ local Window = WindUI:CreateWindow({
     Size = UDim2.fromOffset(500, 350),
     Transparent = getgenv().TransparencyEnabled,
     Theme = "Dark",
-    Transparent = true,
     Resizable = true,
     SideBarWidth = 150,
     BackgroundImageTransparency = 0.8,
