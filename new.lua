@@ -1,4 +1,4 @@
--- V1182
+-- V1189
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -395,20 +395,6 @@ end
 local function unequipTool(tool)
     if tool then
         ReplicatedStorage:WaitForChild("RemoteEvents").UnequipItemHandle:FireServer("FireAllClients", tool)
-    end
-end
-
-local function autoplant()
-    while AutoPlantToggle do
-        local args = {
-            Instance.new("Model"),
-            Vector3.new(-41.2053, 1.0633, 29.2236)
-        }
-        game:GetService("ReplicatedStorage")
-            :WaitForChild("RemoteEvents")
-            :WaitForChild("RequestPlantItem")
-            :InvokeServer(unpack(args))
-        task.wait(1)
     end
 end
 
@@ -969,7 +955,6 @@ Tabs.Info = Window:Tab({
     Desc = "DYHUB"
 })
 
--- A
 
 Tabs.Main = Window:Tab({
     Title = "Main",
@@ -987,7 +972,6 @@ Tabs.br = Window:Tab({
     Desc = "DYHUB"
 })
 
--- A
 
 Tabs.Combat = Window:Tab({
     Title = "Combat",
@@ -1010,7 +994,6 @@ Tabs.Tp = Window:Tab({
     Desc = "DYHUB"
 })
 
--- A
 
 Tabs.Hitbox = Window:Tab({
     Title = "Hitbox",
@@ -1023,7 +1006,6 @@ Tabs.More = Window:Tab({
     Desc = "DYHUB"
 })
 
--- 
 
 Tabs.Vision = Window:Tab({
     Title = "Settings",
@@ -1059,19 +1041,6 @@ Tabs.Combat:Toggle({
         else
             local tool, _ = getAnyToolWithDamageID(true)
             unequipTool(tool)
-        end
-    end
-})
-
-Tabs.Combat:Section({ Title = "Chop Settings", Icon = "settings" })
-
-Tabs.Combat:Toggle({
-    Title = "Auto Plant",
-    Value = false,
-    Callback = function(state)
-        AutoPlantToggle = state
-        if state then
-            task.spawn(autoplant)
         end
     end
 })
