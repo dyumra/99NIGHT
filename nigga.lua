@@ -928,64 +928,80 @@ pcall(function()
 end)
 
 Window:EditOpenButton({
-    Title = "Toggle",
-    Icon = "zap",
+    Title = "DYHUB - Open",
+    Icon = "monitor",
     CornerRadius = UDim.new(0, 6),
     StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(138, 43, 226), Color3.fromRGB(173, 216, 230)),
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
     Draggable = true,
 })
 
 local Tabs = {}
 
-Tabs.Combat = Window:Tab({
-    Title = "Combat",
-    Icon = "sword",
-    Desc = "Axiora"
+Tabs.Info = Window:Tab({
+    Title = "Information",
+    Icon = "badge-info",
+    Desc = "DYHUB"
 })
+
+Tabs.MainDivider = Window:Divider(),
+
 Tabs.Main = Window:Tab({
     Title = "Main",
     Icon = "align-left",
-    Desc = "Axiora"
+    Desc = "DYHUB"
 })
 Tabs.Auto = Window:Tab({
     Title = "Auto",
     Icon = "wrench",
-    Desc = "Axiora"
-})
-
-Tabs.esp = Window:Tab({
-    Title = "Esp",
-    Icon = "sparkles",
-    Desc = "Axiora"
+    Desc = "DYHUB"
 })
 Tabs.br = Window:Tab({
     Title = "Bring",
     Icon = "package",
-    Desc = "Axiora"
+    Desc = "DYHUB"
 })
-Tabs.Tp = Window:Tab({
-    Title = "Teleport",
-    Icon = "map",
-    Desc = "Axiora"
+
+Tabs.CombatDivider = Window:Divider(),
+
+Tabs.Combat = Window:Tab({
+    Title = "Combat",
+    Icon = "sword",
+    Desc = "DYHUB"
 })
 Tabs.Fly = Window:Tab({
     Title = "Player",
     Icon = "user",
-    Desc = "Axiora"
+    Desc = "DYHUB"
 })
-Tabs.Vision= Window:Tab({
-    Title = "Environment",
+Tabs.esp = Window:Tab({
+    Title = "Esp",
     Icon = "eye",
-    Desc = "Axiora"
+    Desc = "DYHUB"
 })
-Tabs.Info = Window:Tab({
-    Title = "Information",
-    Icon = "badge-info",
-    Desc = "Axiora"
+Tabs.Tp = Window:Tab({
+    Title = "Teleport",
+    Icon = "map",
+    Desc = "DYHUB"
 })
 
-Window:SelectTab(9)
+Tabs.MiscDivider = Window:Divider(),
+
+Tabs.More = Window:Tab({
+    Title = "Farm",
+    Icon = "crown",
+    Desc = "Stellar"
+})
+
+Tabs.SettingsDivider = Window:Divider(),
+
+Tabs.Vision = Window:Tab({
+    Title = "Settings",
+    Icon = "settings",
+    Desc = "DYHUB"
+})
+
+Window:SelectTab(1)
 
 Tabs.Combat:Section({ Title = "Aura", Icon = "star" })
 
@@ -1021,9 +1037,9 @@ Tabs.Combat:Section({ Title = "Settings", Icon = "settings" })
 
 Tabs.Combat:Slider({
     Title = "Aura Radius",
-    Value = { Min = 50, Max = 500, Default = 50 },
+    Value = { Min = 20, Max = 800, Default = 50 },
     Callback = function(value)
-        auraRadius = math.clamp(value, 10, 500)
+        auraRadius = math.clamp(value, 10, 800)
     end
 })
 
@@ -1041,10 +1057,10 @@ Tabs.Main:Dropdown({
 })
 
 Tabs.Main:Input({
-    Title = "Feed %",
+    Title = "Feed Amount",
     Desc = "Eat when hunger reaches this %",
     Value = tostring(hungerThreshold),
-    Placeholder = "Ex: 75",
+    Placeholder = "Ex: 50",
     Numeric = true,
     Callback = function(value)
         local n = tonumber(value)
@@ -1548,7 +1564,7 @@ Tabs.br:Toggle({
     end
 })
 
-Tabs.Fly:Section({ Title = "Main", Icon = "eye" })
+Tabs.Fly:Section({ Title = "Player Settings", Icon = "user" })
 
 Tabs.Fly:Slider({
     Title = "Fly Speed",
@@ -1615,12 +1631,14 @@ Tabs.Fly:Toggle({
     end
 })
 
+Tabs.Fly:Section({ Title = "Power Settings", Icon = "flame" })
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local noclipConnection
 
 Tabs.Fly:Toggle({
-    Title = "Noclip",
+    Title = "No Clip",
     Value = false,
     Callback = function(state)
         if state then
@@ -2108,8 +2126,10 @@ Tabs.Vision:Toggle({
     end
 })
 
+Tabs.Vision:Section({ Title = "Visual", Icon = "lightbulb" })
+
 Tabs.Vision:Toggle({
-    Title = "Fullbright",
+    Title = "Full Bright",
     Desc = "",
     Value = false,
     Callback = function(state)
@@ -2117,7 +2137,7 @@ Tabs.Vision:Toggle({
         
         if state then
             -- Enable fullbright
-            Lighting.Brightness = 2
+            Lighting.Brightness = 3.5
             Lighting.Ambient = Color3.new(1, 1, 1)
             Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
             Lighting.ShadowSoftness = 0
@@ -2266,7 +2286,7 @@ LoadDiscordInfo()
 
 Info:Divider()
 Info:Section({ 
-    Title = "DYHUB",
+    Title = "DYHUB Information",
     TextXAlignment = "Center",
     TextSize = 17,
 })
@@ -2280,6 +2300,26 @@ local Owner = Info:Paragraph({
     Thumbnail = "",
     ThumbnailSize = 0,
     Locked = false,
+})
+
+local Social = Info:Paragraph({
+    Title = "Social",
+    Desc = "Copy link social media for follow!",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://guns.lol/DYHUB")
+                print("Copied social media link to clipboard!")
+            end,
+        }
+    }
 })
 
 local Discord = Info:Paragraph({
