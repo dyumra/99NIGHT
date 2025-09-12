@@ -952,8 +952,6 @@ Tabs.Info = Window:Tab({
     Desc = "DYHUB"
 })
 
-Tabs.MainDivider = Window:Divider(),
-
 Tabs.Main = Window:Tab({
     Title = "Main",
     Icon = "rocket",
@@ -975,8 +973,6 @@ Tabs.br = Window:Tab({
     Desc = "DYHUB"
 })
 
-Tabs.PlayersDivider = Window:Divider(),
-
 Tabs.Fly = Window:Tab({
     Title = "Player",
     Icon = "user",
@@ -992,8 +988,6 @@ Tabs.Tp = Window:Tab({
     Icon = "map",
     Desc = "DYHUB"
 })
-
-Tabs.SettingsDivider = Window:Divider(),
 
 Tabs.Vision= Window:Tab({
     Title = "Settings",
@@ -1205,78 +1199,6 @@ coroutine.wrap(function()
     end
 end)()
 
-Tabs.Tp:Section({ Title = "Scan Map", Icon = "map" })
-
-Tabs.Tp:Toggle({
-    Title = "Scan Map (Essential)",
-    Default = false,
-    Callback = function(state)
-        getgenv().scan_map = state
-
-        if not state then
-            -- ปิด scan map แล้ว teleport กลับด้วย tp1()
-            if type(tp1) == "function" then
-                tp1()
-            end
-            return
-        end
-
-        task.spawn(function()
-            local Players = game:GetService("Players")
-            local player = Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart", 3)
-            if not hrp then return end
-
-            local map = workspace:FindFirstChild("Map")
-            if not map then return end
-
-            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
-            if not foliage then return end
-
-            while getgenv().scan_map do
-                local trees = {}
-                for _, obj in ipairs(foliage:GetChildren()) do
-                    if obj.Name == "TreeBig2" and obj:IsA("Model") then
-                        local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
-                        if trunk then
-                            table.insert(trees, trunk)
-                        end
-                    end
-                end
-
-                for _, trunk in ipairs(trees) do
-                    if not getgenv().scan_map then break end
-                    if trunk and trunk.Parent then
-                        local treeCFrame = trunk.CFrame
-                        local rightVector = treeCFrame.RightVector
-                        local targetPosition = treeCFrame.Position + rightVector * 69 + Vector3.new(0, 350, 0) -- ขยับขึ้น 10 เพื่ออยู่บนอากาศ
-                        
-                        -- เทเลพอร์ตผู้เล่น
-                        hrp.CFrame = CFrame.new(targetPosition)
-
-                        -- สร้าง part ใต้เท้า
-                        local footPart = Instance.new("Part")
-                        footPart.Size = Vector3.new(10, 1, 10)
-                        footPart.Anchored = true
-                        footPart.CanCollide = true
-                        footPart.Transparency = 1
-                        footPart.BrickColor = BrickColor.new("Bright yellow")
-                        footPart.CFrame = CFrame.new(targetPosition - Vector3.new(0, 3, 0)) -- ต่ำกว่า HRP
-                        footPart.Parent = workspace
-
-                        -- ลบหลัง 1 วินาที
-                        game.Debris:AddItem(footPart, 1)
-
-                        task.wait(0.01)
-                    end
-                end
-                task.wait(0.1)
-            end
-        end)
-    end
-})
-
 Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Button({
@@ -1292,75 +1214,6 @@ Tabs.Tp:Button({
     Locked = false,
     Callback = function()
         tp2()
-    end
-})
-
-Tabs.Tp:Button({
-    Title = "Teleport to Safe Zone",
-    Callback = function()
-        if not workspace:FindFirstChild("SafeZonePart") then
-            local createpart = Instance.new("Part")
-            createpart.Name = "SafeZonePart"
-            createpart.Size = Vector3.new(30, 3, 30)
-            createpart.Position = Vector3.new(0, 350, 0)
-            createpart.Anchored = true
-            createpart.CanCollide = true
-            createpart.Transparency = 0.8
-            createpart.Color = Color3.fromRGB(255, 0, 0)
-            createpart.Parent = workspace
-        end
-        local player = game:GetService("Players").LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        hrp.CFrame = CFrame.new(0, 360, 0)
-    end
-})
-
-Tabs.Tp:Button({
-    Title = "Teleport to Trader (Bunny Foot)",
-    Callback = function()
-        local pos = Vector3.new(-37.08, 3.98, -16.33)
-        local player = game:GetService("Players").LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        hrp.CFrame = CFrame.new(pos)
-    end
-})
-
-Tabs.Tp:Section({ Title = "Tree", Icon = "tree-deciduous" })
-
-Tabs.Tp:Button({
-    Title = "Teleport to Random Tree",
-    Callback = function()
-        local Players = game:GetService("Players")
-        local player = Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:FindFirstChild("HumanoidRootPart", 3)
-        if not hrp then return end
-
-        local map = workspace:FindFirstChild("Map")
-        if not map then return end
-
-        local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
-        if not foliage then return end
-
-        local trees = {}
-        for _, obj in ipairs(foliage:GetChildren()) do
-            if obj.Name == "Small Tree" and obj:IsA("Model") then
-                local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
-                if trunk then
-                    table.insert(trees, trunk)
-                end
-            end
-        end
-
-        if #trees > 0 then
-            local trunk = trees[math.random(1, #trees)]
-            local treeCFrame = trunk.CFrame
-            local rightVector = treeCFrame.RightVector
-            local targetPosition = treeCFrame.Position + rightVector * 3
-            hrp.CFrame = CFrame.new(targetPosition)
-        end
     end
 })
 
