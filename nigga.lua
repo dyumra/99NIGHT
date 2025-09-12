@@ -1,4 +1,4 @@
--- V519
+-- V523
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -2321,6 +2321,70 @@ Tabs.Vision:Toggle({
     end
 })
 
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local NoFogToggle = false
+local OriginalFogStart = Lighting.FogStart
+local OriginalFogEnd = Lighting.FogEnd
+
+Tabs.Vision:Toggle({
+    Title = "No Fog",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        NoFogToggle = state
+        
+        if not state then
+            -- คืนค่าเดิม
+            Lighting.FogStart = OriginalFogStart
+            Lighting.FogEnd = OriginalFogEnd
+        end
+    end
+})
+
+RunService.Heartbeat:Connect(function()
+    if NoFogToggle then
+        if Lighting.FogStart ~= 100000 or Lighting.FogEnd ~= 100000 then
+            Lighting.FogStart = 100000
+            Lighting.FogEnd = 100000
+        end
+    end
+end)
+
+local Lighting = game:GetService("Lighting")
+
+-- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
+vibrantEffect.Name = "VibrantEffect"
+vibrantEffect.Saturation = 0.8      -- สด 200%
+vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
+vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
+vibrantEffect.Enabled = false
+vibrantEffect.Parent = Lighting
+
+Tabs.Vision:Toggle({
+    Title = "Vibrant Colors",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิดโหมดสีสด
+            Lighting.Ambient = Color3.fromRGB(180, 180, 180)
+            Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
+            Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
+            Lighting.ColorShift_Bottom = Color3.fromRGB(200, 240, 255)
+            vibrantEffect.Enabled = true
+        else
+            -- ปิดโหมด กลับค่าดั้งเดิม
+            Lighting.Ambient = Color3.new(0, 0, 0)
+            Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Top = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
+            vibrantEffect.Enabled = false
+        end
+    end
+})
+
 Tabs.Vision:Section({ Title = "Low Graphic", Icon = "user-cog" })
 
 Tabs.Vision:Button({
@@ -2330,7 +2394,7 @@ Tabs.Vision:Button({
             settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
             local lighting = game:GetService("Lighting")
             lighting.Brightness = 0
-            lighting.FogEnd = 100
+            lighting.FogEnd = 1000000
             lighting.GlobalShadows = false
             lighting.EnvironmentDiffuseScale = 0
             lighting.EnvironmentSpecularScale = 0
@@ -2370,7 +2434,105 @@ Tabs.Vision:Button({
     Title = "FPS Boost (By DYHUB)",
     Callback = function()
 		print("[DYHUB] FPS Boost Applied")
+        local lighting1 = game:GetService("Lighting")
+        lighting1.Brightness = 0
+        lighting1.FogEnd = 1000000
+        lighting1.GlobalShadows = false
+        lighting1.EnvironmentDiffuseScale = 0
+        lighting1.EnvironmentSpecularScale = 0
+        lighting1.ClockTime = 14
+        lighting1.OutdoorAmbient = Color3.new(0, 0, 0)
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+    end
+})
+
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local Camera = workspace.CurrentCamera
+
+-- Settings
+local showFPS, showPing = true, true
+local fpsCounter, fpsLastUpdate, fpsValue = 0, tick(), 0
+
+-- Drawing setup
+local function createText(yOffset)
+    local textObj = Drawing.new("Text")
+    textObj.Size = 16
+    textObj.Position = Vector2.new(Camera.ViewportSize.X - 110, yOffset)
+    textObj.Color = Color3.fromRGB(0, 255, 0)
+    textObj.Center = false
+    textObj.Outline = true
+    textObj.Visible = true
+    return textObj
+end
+
+local fpsText = createText(10)
+local msText = createText(30)
+
+-- Adjust position when screen size changes
+Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+    fpsText.Position = Vector2.new(Camera.ViewportSize.X - 110, 10)
+    msText.Position = Vector2.new(Camera.ViewportSize.X - 110, 30)
+end)
+
+-- Main update loop
+RunService.RenderStepped:Connect(function()
+    fpsCounter += 1
+
+    if tick() - fpsLastUpdate >= 1 then
+        fpsValue = fpsCounter
+        fpsCounter = 0
+        fpsLastUpdate = tick()
+
+        -- FPS Display
+        if showFPS then
+            fpsText.Text = string.format("FPS: %d", fpsValue)
+            fpsText.Color = fpsValue >= 50 and Color3.fromRGB(0, 255, 0)
+                or fpsValue >= 30 and Color3.fromRGB(255, 165, 0)
+                or Color3.fromRGB(255, 0, 0)
+            fpsText.Visible = true
+        else
+            fpsText.Visible = false
+        end
+
+        -- Ping Display
+        if showPing then
+            local pingStat = Stats.Network.ServerStatsItem["Data Ping"]
+            local ping = pingStat and math.floor(pingStat:GetValue()) or 0
+            local color, label = Color3.fromRGB(0, 255, 0), "Ping: "
+
+            if ping > 120 then
+                color, label = Color3.fromRGB(255, 0, 0), "Ew Wifi Ping: "
+            elseif ping > 60 then
+                color = Color3.fromRGB(255, 165, 0)
+            end
+
+            msText.Text = string.format("%s%d ms", label, ping)
+            msText.Color = color
+            msText.Visible = true
+        else
+            msText.Visible = false
+        end
+    end
+end)
+
+Tabs.Vision:Section({ Title = "Show Status", Icon = "settings-2" })
+
+-- UI Toggles
+Tabs.Vision:Toggle({
+    Title = "Show FPS",
+    Default = true,
+    Callback = function(val)
+        showFPS = val
+        fpsText.Visible = val
+    end
+})
+Tabs.Vision:Toggle({
+    Title = "Show Ping",
+    Default = true,
+    Callback = function(val)
+        showPing = val
+        msText.Visible = val
     end
 })
 
