@@ -1,4 +1,4 @@
--- 21321321321312
+-- V512
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -944,8 +944,6 @@ Tabs.Info = Window:Tab({
     Desc = "DYHUB"
 })
 
-Tabs.MainDivider = Window:Divider(),
-
 Tabs.Main = Window:Tab({
     Title = "Main",
     Icon = "align-left",
@@ -961,8 +959,6 @@ Tabs.br = Window:Tab({
     Icon = "package",
     Desc = "DYHUB"
 })
-
-Tabs.CombatDivider = Window:Divider(),
 
 Tabs.Combat = Window:Tab({
     Title = "Combat",
@@ -985,15 +981,11 @@ Tabs.Tp = Window:Tab({
     Desc = "DYHUB"
 })
 
-Tabs.MiscDivider = Window:Divider(),
-
 Tabs.More = Window:Tab({
     Title = "Farm",
     Icon = "crown",
     Desc = "Stellar"
 })
-
-Tabs.SettingsDivider = Window:Divider(),
 
 Tabs.Vision = Window:Tab({
     Title = "Settings",
