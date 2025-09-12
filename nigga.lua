@@ -1,4 +1,4 @@
--- V533
+-- V535
 
 repeat task.wait() until game:IsLoaded()
 
@@ -1020,7 +1020,13 @@ Tabs.Tp = Window:Tab({
 Tabs.More = Window:Tab({
     Title = "Farm",
     Icon = "crown",
-    Desc = "Stellar"
+    Desc = "DYHUB"
+})
+
+Tabs.Anti = Window:Tab({
+    Title = "Anti",
+    Icon = "shield",
+    Desc = "DYHUB"
 })
 
 Tabs.Vision = Window:Tab({
@@ -2111,12 +2117,14 @@ Tabs.Main:Toggle({
     end
 })
 
+Tabs.Anti:Section({ Title = "Anti Monster", Icon = "skull" })
+
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local torchLoop = nil
 
-Tabs.Main:Toggle({
-    Title = "Auto Stun Deer",
+Tabs.Anti:Toggle({
+    Title = "Auto Stun Deer (Need Flashlight)",
     Value = false,
     Callback = function(state)
         if state then
@@ -2136,6 +2144,94 @@ Tabs.Main:Toggle({
             if torchLoop then
                 torchLoop:Disconnect()
                 torchLoop = nil
+            end
+        end
+    end
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+local ESCAPE_DISTANCE = 30 -- ระยะเริ่มถอย
+local ESCAPE_SPEED = 0.5   -- ความเร็วถอยต่อเฟรม
+
+local escapeLoop -- เก็บการเชื่อมต่อ RenderStepped
+
+Tabs.Anti:Toggle({
+    Title = "Escape From Deer", 
+    Value = false,
+    Callback = function(state)
+        if state then
+            -- เปิด loop ถอย Owl
+            escapeLoop = RunService.RenderStepped:Connect(function()
+                pcall(function()
+                    local charactersFolder = workspace:FindFirstChild("Characters")
+                    local deer = charactersFolder and charactersFolder:FindFirstChild("Deer")
+                    
+                    if deer and HumanoidRootPart then
+                        local deerHRP = owl:FindFirstChild("HumanoidRootPart")
+                        if deerHRP then
+                            local deermyPos = HumanoidRootPart.Position
+                            local deerPos = deerHRP.Position
+                            local deerdistance = (deermyPos - deerPos).Magnitude
+                            
+                            if deerdistance < ESCAPE_DISTANCE then
+                                -- คำนวณทิศทางถอยหนี
+                                local deerdirection = (deermyPos - deerPos).Unit
+                                -- ขยับทีละน้อยแบบ CFrame
+                                HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + deerdirection * ESCAPE_SPEED
+                            end
+                        end
+                    end
+                end)
+            end)
+        else
+            -- ปิด loop
+            if escapeLoop then
+                escapeLoop:Disconnect()
+                escapeLoop = nil
+            end
+        end
+    end
+})
+
+Tabs.Anti:Toggle({
+    Title = "Escape From Owl", 
+    Value = false,
+    Callback = function(state)
+        if state then
+            -- เปิด loop ถอย Owl
+            escapeLoop = RunService.RenderStepped:Connect(function()
+                pcall(function()
+                    local charactersFolder = workspace:FindFirstChild("Characters")
+                    local owl = charactersFolder and charactersFolder:FindFirstChild("Owl")
+                    
+                    if owl and HumanoidRootPart then
+                        local owlHRP = owl:FindFirstChild("HumanoidRootPart")
+                        if owlHRP then
+                            local myPos = HumanoidRootPart.Position
+                            local owlPos = owlHRP.Position
+                            local distance = (myPos - owlPos).Magnitude
+                            
+                            if distance < ESCAPE_DISTANCE then
+                                -- คำนวณทิศทางถอยหนี
+                                local direction = (myPos - owlPos).Unit
+                                -- ขยับทีละน้อยแบบ CFrame
+                                HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + direction * ESCAPE_SPEED
+                            end
+                        end
+                    end
+                end)
+            end)
+        else
+            -- ปิด loop
+            if escapeLoop then
+                escapeLoop:Disconnect()
+                escapeLoop = nil
             end
         end
     end
