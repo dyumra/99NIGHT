@@ -1,4 +1,4 @@
--- V525
+-- V526
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -84,7 +84,7 @@ local themes = {"Dark", "Light", "Gray", "Blue", "Green", "Purple"}
 local currentThemeIndex = 1
 
 if not getgenv().TransparencyEnabled then
-    getgenv().TransparencyEnabled = false
+    getgenv().TransparencyEnabled = true
 end
 
 -- combat
