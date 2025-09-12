@@ -1,3 +1,5 @@
+-- 21321321321312
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -112,9 +114,6 @@ local alimentos = {
     "Carrot",
     "Cake",
     "Chili",
-    "Cooked Ribs",
-    "Cooked Mackerel",
-    "Cooked Salmon",
     "Cooked Morsel",
     "Cooked Steak"
 }
@@ -135,7 +134,7 @@ local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist"
 local selectedJunkItems = {}
 local fuelItems = {"Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel"}
 local selectedFuelItems = {}
-local foodItems = {"Cake", "Steak", "Morsel", "Berry", "Carrot", "Ribs", "Salmon", "Mackerel", "Cooked Steak", "Cooked Morsel", "Cooked Ribs", "Cooked Mackerel", "Cooked Salmon"}
+local foodItems = {"Cake", "Cooked Steak", "Cooked Morsel", "Steak", "Morsel", "Berry", "Carrot"}
 local selectedFoodItems = {}
 local medicalItems = {"Bandage", "MedKit"}
 local selectedMedicalItems = {}
@@ -366,7 +365,7 @@ local selectedScrapItem = nil
 local autoScrapItemsEnabled = false
 -- auto cook
 
-local autocookItems = {"Morsel", "Steak", "}
+local autocookItems = {"Morsel", "Steak", "Elvis Steak"}
 local autoCookEnabledItems = {}
 local autoCookEnabled = false
 
@@ -450,13 +449,6 @@ local function chopAuraLoop()
                     if map:FindFirstChild("Landmarks") then
                         for _, obj in ipairs(map.Landmarks:GetChildren()) do
                             if obj:IsA("Model") and obj.Name == "Small Tree" then
-                                table.insert(trees, obj)
-                            end
-                        end
-                    end
-                    if map:FindFirstChild("Foliage") then
-                        for _, obj in ipairs(map.Landmarks:GetChildren()) do
-                            if obj:IsA("Model") and obj.Name == "Snowy Small Tree" then
                                 table.insert(trees, obj)
                             end
                         end
@@ -866,10 +858,10 @@ local function bringItemsByPlayerTP(itemNames, originalPosition)
 end
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
-    Icon = "rbxassetid://104487529937663", 
-    Author = "99 Night in The Forest | Free Version",
-    Folder = "DYHUB | 99NIGHT V2",
+    Title = "99 Nights in forest | Axiora Hub",
+    Icon = "zap", 
+    Author = "AXS Scripts",
+    Folder = "AxsHub",
     Size = UDim2.fromOffset(500, 350),
     Transparent = getgenv().TransparencyEnabled,
     Theme = "Dark",
@@ -936,66 +928,64 @@ pcall(function()
 end)
 
 Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
+    Title = "Toggle",
+    Icon = "zap",
     CornerRadius = UDim.new(0, 6),
     StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Color = ColorSequence.new(Color3.fromRGB(138, 43, 226), Color3.fromRGB(173, 216, 230)),
     Draggable = true,
 })
 
 local Tabs = {}
 
-Tabs.Info = Window:Tab({
-    Title = "Information",
-    Icon = "info",
-    Desc = "DYHUB"
-})
-
-Tabs.Main = Window:Tab({
-    Title = "Main",
-    Icon = "rocket",
-    Desc = "DYHUB"
-})
 Tabs.Combat = Window:Tab({
     Title = "Combat",
     Icon = "sword",
-    Desc = "DYHUB"
+    Desc = "Axiora"
+})
+Tabs.Main = Window:Tab({
+    Title = "Main",
+    Icon = "align-left",
+    Desc = "Axiora"
 })
 Tabs.Auto = Window:Tab({
     Title = "Auto",
     Icon = "wrench",
-    Desc = "DYHUB"
+    Desc = "Axiora"
+})
+
+Tabs.esp = Window:Tab({
+    Title = "Esp",
+    Icon = "sparkles",
+    Desc = "Axiora"
 })
 Tabs.br = Window:Tab({
     Title = "Bring",
     Icon = "package",
-    Desc = "DYHUB"
-})
-
-Tabs.Fly = Window:Tab({
-    Title = "Player",
-    Icon = "user",
-    Desc = "DYHUB"
-})
-Tabs.esp = Window:Tab({
-    Title = "Esp",
-    Icon = "eye",
-    Desc = "DYHUB"
+    Desc = "Axiora"
 })
 Tabs.Tp = Window:Tab({
     Title = "Teleport",
     Icon = "map",
-    Desc = "DYHUB"
+    Desc = "Axiora"
 })
-
+Tabs.Fly = Window:Tab({
+    Title = "Player",
+    Icon = "user",
+    Desc = "Axiora"
+})
 Tabs.Vision= Window:Tab({
-    Title = "Settings",
-    Icon = "settings",
-    Desc = "DYHUB"
+    Title = "Environment",
+    Icon = "eye",
+    Desc = "Axiora"
+})
+Tabs.Info = Window:Tab({
+    Title = "Information",
+    Icon = "badge-info",
+    Desc = "Axiora"
 })
 
-Window:SelectTab(1)
+Window:SelectTab(9)
 
 Tabs.Combat:Section({ Title = "Aura", Icon = "star" })
 
@@ -1031,9 +1021,9 @@ Tabs.Combat:Section({ Title = "Settings", Icon = "settings" })
 
 Tabs.Combat:Slider({
     Title = "Aura Radius",
-    Value = { Min = 50, Max = 800, Default = 50 },
+    Value = { Min = 50, Max = 500, Default = 50 },
     Callback = function(value)
-        auraRadius = math.clamp(value, 10, 800)
+        auraRadius = math.clamp(value, 10, 500)
     end
 })
 
@@ -1216,6 +1206,7 @@ Tabs.Tp:Button({
         tp2()
     end
 })
+
 
 Tabs.Tp:Section({ Title = "Children", Icon = "eye" })
 
@@ -2275,26 +2266,16 @@ LoadDiscordInfo()
 
 Info:Divider()
 Info:Section({ 
-    Title = "DYHUB Infomation",
+    Title = "DYHUB",
     TextXAlignment = "Center",
     TextSize = 17,
 })
 Info:Divider()
 
 local Owner = Info:Paragraph({
-    Title = "Main Founder",
-    Desc = "@dyumraisgoodguy",
+    Title = "Main Owner",
+    Desc = "dyumraisgoodguy",
     Image = "rbxassetid://119789418015420",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 0,
-    Locked = false,
-})
-
-local CoOwner = Info:Paragraph({
-    Title = "DYHUB",
-    Desc = "Developed by dyumra, rhy, oszq",
-    Image = "rbxassetid://104487529937663",
     ImageSize = 30,
     Thumbnail = "",
     ThumbnailSize = 0,
