@@ -1,4 +1,11 @@
--- V532
+-- V533
+
+repeat task.wait() until game:IsLoaded()
+
+game:GetService("Players").LocalPlayer.PlayerGui.Interface.FishingCatchFrame.TimingBar.SuccessArea:GetPropertyChangedSignal("Size"):Connect(function()
+    game:GetService("Players").LocalPlayer.PlayerGui.Interface.FishingCatchFrame.TimingBar.SuccessArea.Position = UDim2.new(0.5,0,0,0)
+    game:GetService("Players").LocalPlayer.PlayerGui.Interface.FishingCatchFrame.TimingBar.SuccessArea.Size = UDim2.new(1,0,1,0)
+end)
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
