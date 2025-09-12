@@ -1,10 +1,18 @@
--- V528
+-- V532
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
+local Lighting = game:GetService("Lighting")
+local effect = Lighting:FindFirstChild("VibrantEffect")
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect")
+local RunService = game:GetService("RunService")
+
+Lighting.ClockTime = 14
+Lighting.GlobalShadows = false
 
 WindUI:AddTheme({
     Name = "Dark",
@@ -2299,11 +2307,9 @@ Tabs.Vision:Toggle({
     Desc = "",
     Value = false,
     Callback = function(state)
-        local Lighting = game:GetService("Lighting")
-        
         if state then
-            -- Enable fullbright
-            Lighting.Brightness = 3.5
+            Lighting.ClockTime = 14
+            Lighting.Brightness = 2.2
             Lighting.Ambient = Color3.new(1, 1, 1)
             Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
             Lighting.ShadowSoftness = 0
@@ -2321,8 +2327,6 @@ Tabs.Vision:Toggle({
     end
 })
 
-local RunService = game:GetService("RunService")
-local Lighting = game:GetService("Lighting")
 
 local NoFogToggle = false
 local OriginalFogStart = Lighting.FogStart
@@ -2336,7 +2340,8 @@ Tabs.Vision:Toggle({
         NoFogToggle = state
         
         if not state then
-            -- คืนค่าเดิม
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
             Lighting.FogStart = OriginalFogStart
             Lighting.FogEnd = OriginalFogEnd
         end
@@ -2346,6 +2351,8 @@ Tabs.Vision:Toggle({
 RunService.Heartbeat:Connect(function()
     if NoFogToggle then
         if Lighting.FogStart ~= 100000 or Lighting.FogEnd ~= 100000 then
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
             Lighting.FogStart = 100000
             Lighting.FogEnd = 100000
             print("[DYHUB] hi 3")
@@ -2353,14 +2360,9 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-local Lighting = game:GetService("Lighting")
-
--- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
-local Lighting = game:GetService("Lighting")
-
--- แค่สร้าง effect ไว้ แต่ไม่เปิด ไม่แก้ Lighting
-local vibrantEffect = Lighting:FindFirstChild("VibrantEffect")
 if not vibrantEffect then
+    Lighting.ClockTime = 14
+    Lighting.GlobalShadows = false
     vibrantEffect = Instance.new("ColorCorrectionEffect")
     vibrantEffect.Name = "VibrantEffect"
     vibrantEffect.Saturation = 0.5
@@ -2372,13 +2374,11 @@ end
 
 Tabs.Vision:Toggle({
     Title = "Vibrant Colors",
-    Default = false,
+    Value = false,
     Callback = function(state)
-        local Lighting = game:GetService("Lighting")
-        local effect = Lighting:FindFirstChild("VibrantEffect")
-        
         if state then
-            -- เปิดโหมดสีสด
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
             Lighting.Ambient = Color3.fromRGB(180, 180, 180)
             Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
             Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
@@ -2391,6 +2391,8 @@ Tabs.Vision:Toggle({
             if effect then
                 effect.Enabled = false
             end
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
             Lighting.Ambient = Color3.new(0, 0, 0)
             Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
             Lighting.ColorShift_Top = Color3.new(0, 0, 0)
@@ -2448,7 +2450,6 @@ Tabs.Vision:Button({
 Tabs.Vision:Button({
     Title = "FPS Boost (By DYHUB)",
     Callback = function()
-        -- แค่กดปุ่มถึงจะรันโค้ดนี้
         print("[DYHUB] FPS Boost Applied")
 
         
