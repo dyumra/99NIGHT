@@ -880,7 +880,7 @@ end
 
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
-    Icon = "zap", 
+    Icon = "rbxassetid://104487529937663", 
     Author = "99 Night in the Forest | Free Version",
     Folder = "AxsHub",
     Size = UDim2.fromOffset(500, 350),
@@ -2356,33 +2356,46 @@ end)
 local Lighting = game:GetService("Lighting")
 
 -- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
-local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
-vibrantEffect.Name = "VibrantEffect"
-vibrantEffect.Saturation = 0.5      -- สด 200%
-vibrantEffect.Contrast = 0.2        -- เพิ่มคอนทราสต์
-vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
-vibrantEffect.Enabled = false
-vibrantEffect.Parent = Lighting
+local Lighting = game:GetService("Lighting")
+
+-- แค่สร้าง effect ไว้ แต่ไม่เปิด ไม่แก้ Lighting
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect")
+if not vibrantEffect then
+    vibrantEffect = Instance.new("ColorCorrectionEffect")
+    vibrantEffect.Name = "VibrantEffect"
+    vibrantEffect.Saturation = 0.5
+    vibrantEffect.Contrast = 0.2
+    vibrantEffect.Brightness = 0.1
+    vibrantEffect.Enabled = false   -- ปิดไว้เฉย ๆ
+    vibrantEffect.Parent = Lighting
+end
 
 Tabs.Vision:Toggle({
     Title = "Vibrant Colors",
     Default = false,
     Callback = function(state)
+        local Lighting = game:GetService("Lighting")
+        local effect = Lighting:FindFirstChild("VibrantEffect")
+        
         if state then
             -- เปิดโหมดสีสด
             Lighting.Ambient = Color3.fromRGB(180, 180, 180)
             Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
             Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
             Lighting.ColorShift_Bottom = Color3.fromRGB(200, 240, 255)
-            vibrantEffect.Enabled = true
+            if effect then
+                effect.Enabled = true
+            end
         else
-            -- ปิดโหมด กลับค่าดั้งเดิม
+            -- ปิดโหมด กลับค่าดั้งเดิม แต่ **ไม่รีเซ็ตทันทีตอนสคริปต์รัน**
+            if effect then
+                effect.Enabled = false
+            end
             Lighting.Ambient = Color3.new(0, 0, 0)
             Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
             Lighting.ColorShift_Top = Color3.new(0, 0, 0)
             Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
-            vibrantEffect.Enabled = false
-            print("[DYHUB] hi 2")
+            print("[DYHUB] hi 1")
         end
     end
 })
