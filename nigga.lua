@@ -1,4 +1,4 @@
--- V512
+-- V519
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -427,6 +427,22 @@ local function killAuraLoop()
     end
 end
 
+local AutoPlantToggle = false
+
+local function autoplant()
+    while AutoPlantToggle do
+        local args = {
+            Instance.new("Model"),
+            Vector3.new(-41.2053, 1.0633, 29.2236)
+        }
+        game:GetService("ReplicatedStorage")
+            :WaitForChild("RemoteEvents")
+            :WaitForChild("RequestPlantItem")
+            :InvokeServer(unpack(args))
+        task.wait(1)
+    end
+end
+
 local function chopAuraLoop()
     while chopAuraToggle do
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -441,7 +457,7 @@ local function chopAuraLoop()
                 if map then
                     if map:FindFirstChild("Foliage") then
                         for _, obj in ipairs(map.Foliage:GetChildren()) do
-                            if obj:IsA("Model") and obj.Name == "Small Tree" then
+                            if obj:IsA("Model") and (obj.Name == "Small Tree" or obj.Name == "Snowy Small Tree") then
                                 table.insert(trees, obj)
                             end
                         end
@@ -858,9 +874,9 @@ local function bringItemsByPlayerTP(itemNames, originalPosition)
 end
 
 local Window = WindUI:CreateWindow({
-    Title = "99 Nights in forest | Axiora Hub",
+    Title = "DYHUB",
     Icon = "zap", 
-    Author = "AXS Scripts",
+    Author = "99 Night in the Forest | Free Version",
     Folder = "AxsHub",
     Size = UDim2.fromOffset(500, 350),
     Transparent = getgenv().TransparencyEnabled,
@@ -946,7 +962,7 @@ Tabs.Info = Window:Tab({
 
 Tabs.Main = Window:Tab({
     Title = "Main",
-    Icon = "align-left",
+    Icon = "rocket",
     Desc = "DYHUB"
 })
 Tabs.Auto = Window:Tab({
@@ -1021,6 +1037,19 @@ Tabs.Combat:Toggle({
         else
             local tool, _ = getAnyToolWithDamageID(true)
             unequipTool(tool)
+        end
+    end
+})
+
+Tabs.Combat:Section({ Title = "Plant Settings", Icon = "axe" })
+
+Tabs.Combat:Toggle({
+    Title = "Auto Plant",
+    Value = false,
+    Callback = function(state)
+        AutoPlantToggle = state
+        if state then
+            task.spawn(autoplant)
         end
     end
 })
@@ -1197,6 +1226,78 @@ coroutine.wrap(function()
     end
 end)()
 
+Tabs.Tp:Section({ Title = "Scan Map", Icon = "map" })
+
+Tabs.Tp:Toggle({
+    Title = "Scan Map (Essential)",
+    Default = false,
+    Callback = function(state)
+        getgenv().scan_map = state
+
+        if not state then
+            -- ปิด scan map แล้ว teleport กลับด้วย tp1()
+            if type(tp1) == "function" then
+                tp1()
+            end
+            return
+        end
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            local map = workspace:FindFirstChild("Map")
+            if not map then return end
+
+            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+            if not foliage then return end
+
+            while getgenv().scan_map do
+                local trees = {}
+                for _, obj in ipairs(foliage:GetChildren()) do
+                    if obj.Name == "TreeBig2" and obj:IsA("Model") then
+                        local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                        if trunk then
+                            table.insert(trees, trunk)
+                        end
+                    end
+                end
+
+                for _, trunk in ipairs(trees) do
+                    if not getgenv().scan_map then break end
+                    if trunk and trunk.Parent then
+                        local treeCFrame = trunk.CFrame
+                        local rightVector = treeCFrame.RightVector
+                        local targetPosition = treeCFrame.Position + rightVector * 69 + Vector3.new(0, 350, 0) -- ขยับขึ้น 10 เพื่ออยู่บนอากาศ
+                        
+                        -- เทเลพอร์ตผู้เล่น
+                        hrp.CFrame = CFrame.new(targetPosition)
+
+                        -- สร้าง part ใต้เท้า
+                        local footPart = Instance.new("Part")
+                        footPart.Size = Vector3.new(10, 1, 10)
+                        footPart.Anchored = true
+                        footPart.CanCollide = true
+                        footPart.Transparency = 1
+                        footPart.BrickColor = BrickColor.new("Bright yellow")
+                        footPart.CFrame = CFrame.new(targetPosition - Vector3.new(0, 3, 0)) -- ต่ำกว่า HRP
+                        footPart.Parent = workspace
+
+                        -- ลบหลัง 1 วินาที
+                        game.Debris:AddItem(footPart, 1)
+
+                        task.wait(0.01)
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
 Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Button({
@@ -1215,6 +1316,74 @@ Tabs.Tp:Button({
     end
 })
 
+Tabs.Tp:Button({
+    Title = "Teleport to Safe Zone",
+    Callback = function()
+        if not workspace:FindFirstChild("SafeZonePart") then
+            local createpart = Instance.new("Part")
+            createpart.Name = "SafeZonePart"
+            createpart.Size = Vector3.new(30, 3, 30)
+            createpart.Position = Vector3.new(0, 350, 0)
+            createpart.Anchored = true
+            createpart.CanCollide = true
+            createpart.Transparency = 0.8
+            createpart.Color = Color3.fromRGB(255, 0, 0)
+            createpart.Parent = workspace
+        end
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(0, 360, 0)
+    end
+})
+
+Tabs.Tp:Button({
+    Title = "Teleport to Trader (Bunny Foot)",
+    Callback = function()
+        local pos = Vector3.new(-37.08, 3.98, -16.33)
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(pos)
+    end
+})
+
+Tabs.Tp:Section({ Title = "Tree", Icon = "tree-deciduous" })
+
+Tabs.Tp:Button({
+    Title = "Teleport to Random Tree",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart", 3)
+        if not hrp then return end
+
+        local map = workspace:FindFirstChild("Map")
+        if not map then return end
+
+        local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+        if not foliage then return end
+
+        local trees = {}
+        for _, obj in ipairs(foliage:GetChildren()) do
+            if obj.Name == "Small Tree" and obj:IsA("Model") then
+                local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                if trunk then
+                    table.insert(trees, trunk)
+                end
+            end
+        end
+
+        if #trees > 0 then
+            local trunk = trees[math.random(1, #trees)]
+            local treeCFrame = trunk.CFrame
+            local rightVector = treeCFrame.RightVector
+            local targetPosition = treeCFrame.Position + rightVector * 3
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+})
 
 Tabs.Tp:Section({ Title = "Children", Icon = "eye" })
 
@@ -2144,6 +2313,70 @@ Tabs.Vision:Toggle({
             Lighting.GlobalShadows = originalLightingValues.GlobalShadows
             Lighting.Technology = originalLightingValues.Technology
         end
+    end
+})
+
+Tabs.Vision:Section({ Title = "Low Graphic", Icon = "user-cog" })
+
+Tabs.Vision:Button({
+    Title = "FPS Boost (By Roblox)",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("[Roblox] FPS Boost Applied")
+    end
+})
+
+-- สร้างแท็บก่อน
+Tabs.Vision:Button({
+    Title = "FPS Boost (By DYHUB)",
+    Callback = function()
+		print("[DYHUB] FPS Boost Applied")
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+    end
+})
+
+Tabs.More:Section({ Title = "Auto Farm", Icon = "gem" })
+Tabs.More:Section({ Title = "Feature: Auto Exe, Auto Server-Hop", Icon = "info" })
+
+-- ปุ่มในแท็บ More
+Tabs.More:Button({
+    Title = "Auto Farm (Cào Mod)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/dyhub99night.lua"))()
     end
 })
 
