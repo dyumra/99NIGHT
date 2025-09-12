@@ -89,6 +89,8 @@ end
 
 -- combat
 
+local scan_map = false
+
 local killAuraToggle = false
 local chopAuraToggle = false
 local auraRadius = 50
@@ -114,6 +116,9 @@ local alimentos = {
     "Carrot",
     "Cake",
     "Chili",
+    "Cooked Ribs",
+    "Cooked Mackerel",
+    "Cooked Salmon",
     "Cooked Morsel",
     "Cooked Steak"
 }
@@ -124,9 +129,9 @@ local ie = {
     "Bandage", "Bolt", "Broken Fan", "Broken Microwave", "Cake", "Carrot", "Chair", "Coal", "Coin Stack",
     "Cooked Morsel", "Cooked Steak", "Fuel Canister", "Iron Body", "Leather Armor", "Log", "MadKit", "Metal Chair",
     "MedKit", "Old Car Engine", "Old Flashlight", "Old Radio", "Revolver", "Revolver Ammo", "Rifle", "Rifle Ammo",
-    "Morsel", "Sheet Metal", "Steak", "Tyre", "Washing Machine"
+    "Morsel", "Sheet Metal", "Steak", "Tyre", "Washing Machine", "Cultist Gem", "Gem of the Forest Fragment"
 }
-local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist", "Alien"}
+local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist", "Alien", "Alien Elite"}
 
 -- bring
 
@@ -134,7 +139,7 @@ local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist"
 local selectedJunkItems = {}
 local fuelItems = {"Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel"}
 local selectedFuelItems = {}
-local foodItems = {"Cake", "Cooked Steak", "Cooked Morsel", "Steak", "Morsel", "Berry", "Carrot"}
+local foodItems = {"Cake", "Cooked Steak", "Cooked Morsel", "Ribs", "Salmon", "Cooked Salmon", "Cooked Ribs", "Mackerel", "Cooked Mackerel", "Steak", "Morsel", "Berry", "Carrot"}
 local selectedFoodItems = {}
 local medicalItems = {"Bandage", "MedKit"}
 local selectedMedicalItems = {}
@@ -365,7 +370,7 @@ local selectedScrapItem = nil
 local autoScrapItemsEnabled = false
 -- auto cook
 
-local autocookItems = {"Morsel", "Steak", "Elvis Steak"}
+local autocookItems = {"Morsel", "Steak", "Ribs", "Salmon", "Mackerel"}
 local autoCookEnabledItems = {}
 local autoCookEnabled = false
 
@@ -1232,14 +1237,17 @@ Tabs.Tp:Toggle({
     Title = "Scan Map (Essential)",
     Default = false,
     Callback = function(state)
-        getgenv().scan_map = state
+        scan_map = state
 
         if not state then
-            -- ปิด scan map แล้ว teleport กลับด้วย tp1()
-            if type(tp1) == "function" then
+            -- ตรวจสอบว่ามีการเปิด toggle ก่อนแล้วค่อยเรียก tp1()
+            if type(tp1) == "function" and scan_map_was_on then
                 tp1()
             end
+            scan_map_was_on = false
             return
+        else
+            scan_map_was_on = true
         end
 
         task.spawn(function()
@@ -1255,10 +1263,10 @@ Tabs.Tp:Toggle({
             local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
             if not foliage then return end
 
-            while getgenv().scan_map do
+            while scan_map do
                 local trees = {}
                 for _, obj in ipairs(foliage:GetChildren()) do
-                    if obj.Name == "TreeBig2" and obj:IsA("Model") then
+                    if obj.Name == "Small Tree" and obj:IsA("Model") then
                         local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
                         if trunk then
                             table.insert(trees, trunk)
@@ -1267,32 +1275,29 @@ Tabs.Tp:Toggle({
                 end
 
                 for _, trunk in ipairs(trees) do
-                    if not getgenv().scan_map then break end
+                    if not scan_map then break end
                     if trunk and trunk.Parent then
                         local treeCFrame = trunk.CFrame
                         local rightVector = treeCFrame.RightVector
-                        local targetPosition = treeCFrame.Position + rightVector * 69 + Vector3.new(0, 350, 0) -- ขยับขึ้น 10 เพื่ออยู่บนอากาศ
+                        local targetPosition = treeCFrame.Position + rightVector * 69 + Vector3.new(0, 15, 69)
                         
-                        -- เทเลพอร์ตผู้เล่น
                         hrp.CFrame = CFrame.new(targetPosition)
 
-                        -- สร้าง part ใต้เท้า
                         local footPart = Instance.new("Part")
                         footPart.Size = Vector3.new(10, 1, 10)
                         footPart.Anchored = true
                         footPart.CanCollide = true
                         footPart.Transparency = 1
                         footPart.BrickColor = BrickColor.new("Bright yellow")
-                        footPart.CFrame = CFrame.new(targetPosition - Vector3.new(0, 3, 0)) -- ต่ำกว่า HRP
+                        footPart.CFrame = CFrame.new(targetPosition - Vector3.new(0, 3, 0))
                         footPart.Parent = workspace
 
-                        -- ลบหลัง 1 วินาที
                         game.Debris:AddItem(footPart, 1)
 
                         task.wait(0.01)
                     end
                 end
-                task.wait(0.1)
+                task.wait(0.25)
             end
         end)
     end
@@ -2074,7 +2079,7 @@ Tabs.Main:Toggle({
                             obj.HoldDuration = 0
                         end
                     end
-                    task.wait(0.5)
+                    task.wait(5)
                 end
             end)
         else
@@ -2519,7 +2524,7 @@ Info:Divider()
 
 local Owner = Info:Paragraph({
     Title = "Main Owner",
-    Desc = "dyumraisgoodguy",
+    Desc = "@dyumraisgoodguy#8888",
     Image = "rbxassetid://119789418015420",
     ImageSize = 30,
     Thumbnail = "",
