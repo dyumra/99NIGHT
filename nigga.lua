@@ -1,4 +1,4 @@
--- V535
+-- V540
 
 repeat task.wait() until game:IsLoaded()
 
@@ -2151,91 +2151,80 @@ Tabs.Anti:Toggle({
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local HumanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+-- ตั้งค่าแต่ละตัว
+local ESCAPE_DISTANCE_OWL = 80
+local ESCAPE_SPEED_OWL = 5
 
-local ESCAPE_DISTANCE = 30 -- ระยะเริ่มถอย
-local ESCAPE_SPEED = 0.5   -- ความเร็วถอยต่อเฟรม
+local ESCAPE_DISTANCE_DEER = 60
+local ESCAPE_SPEED_DEER = 4
 
-local escapeLoop -- เก็บการเชื่อมต่อ RenderStepped
+local escapeLoopOwl
+local escapeLoopDeer
 
-Tabs.Anti:Toggle({
-    Title = "Escape From Deer", 
-    Value = false,
-    Callback = function(state)
-        if state then
-            -- เปิด loop ถอย Owl
-            escapeLoop = RunService.RenderStepped:Connect(function()
-                pcall(function()
-                    local charactersFolder = workspace:FindFirstChild("Characters")
-                    local deer = charactersFolder and charactersFolder:FindFirstChild("Deer")
-                    
-                    if deer and HumanoidRootPart then
-                        local deerHRP = owl:FindFirstChild("HumanoidRootPart")
-                        if deerHRP then
-                            local deermyPos = HumanoidRootPart.Position
-                            local deerPos = deerHRP.Position
-                            local deerdistance = (deermyPos - deerPos).Magnitude
-                            
-                            if deerdistance < ESCAPE_DISTANCE then
-                                -- คำนวณทิศทางถอยหนี
-                                local deerdirection = (deermyPos - deerPos).Unit
-                                -- ขยับทีละน้อยแบบ CFrame
-                                HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + deerdirection * ESCAPE_SPEED
-                            end
-                        end
-                    end
-                end)
-            end)
-        else
-            -- ปิด loop
-            if escapeLoop then
-                escapeLoop:Disconnect()
-                escapeLoop = nil
-            end
-        end
-    end
-})
-
+-- Toggle หนี Owl
 Tabs.Anti:Toggle({
     Title = "Escape From Owl", 
     Value = false,
     Callback = function(state)
         if state then
-            -- เปิด loop ถอย Owl
-            escapeLoop = RunService.RenderStepped:Connect(function()
+            escapeLoopOwl = RunService.RenderStepped:Connect(function()
                 pcall(function()
-                    local charactersFolder = workspace:FindFirstChild("Characters")
-                    local owl = charactersFolder and charactersFolder:FindFirstChild("Owl")
-                    
-                    if owl and HumanoidRootPart then
-                        local owlHRP = owl:FindFirstChild("HumanoidRootPart")
-                        if owlHRP then
-                            local myPos = HumanoidRootPart.Position
-                            local owlPos = owlHRP.Position
-                            local distance = (myPos - owlPos).Magnitude
-                            
-                            if distance < ESCAPE_DISTANCE then
-                                -- คำนวณทิศทางถอยหนี
-                                local direction = (myPos - owlPos).Unit
-                                -- ขยับทีละน้อยแบบ CFrame
-                                HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + direction * ESCAPE_SPEED
-                            end
+                    local owl = workspace:FindFirstChild("Characters") and workspace.Characters:FindFirstChild("Owl")
+                    if owl and owl:FindFirstChild("HumanoidRootPart") then
+                        local myPos = HumanoidRootPart.Position
+                        local owlPos = owl.HumanoidRootPart.Position
+                        local distance = (myPos - owlPos).Magnitude
+
+                        if distance < ESCAPE_DISTANCE_OWL then
+                            local direction = (myPos - owlPos).Unit
+                            HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + direction * ESCAPE_SPEED_OWL
                         end
                     end
                 end)
             end)
         else
-            -- ปิด loop
-            if escapeLoop then
-                escapeLoop:Disconnect()
-                escapeLoop = nil
+            if escapeLoopOwl then
+                escapeLoopOwl:Disconnect()
+                escapeLoopOwl = nil
             end
         end
     end
 })
+
+-- Toggle หนี Deer
+Tabs.Anti:Toggle({
+    Title = "Escape From Deer", 
+    Value = false,
+    Callback = function(state)
+        if state then
+            escapeLoopDeer = RunService.RenderStepped:Connect(function()
+                pcall(function()
+                    local deer = workspace:FindFirstChild("Characters") and workspace.Characters:FindFirstChild("Deer")
+                    if deer and deer:FindFirstChild("HumanoidRootPart") then
+                        local myPos = HumanoidRootPart.Position
+                        local deerPos = deer.HumanoidRootPart.Position
+                        local distance = (myPos - deerPos).Magnitude
+
+                        if distance < ESCAPE_DISTANCE_DEER then
+                            local direction = (myPos - deerPos).Unit
+                            HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + direction * ESCAPE_SPEED_DEER
+                        end
+                    end
+                end)
+            end)
+        else
+            if escapeLoopDeer then
+                escapeLoopDeer:Disconnect()
+                escapeLoopDeer = nil
+            end
+        end
+    end
+})
+
 
 Tabs.Vision:Section({ Title = "Vision", Icon = "eye" })
 
