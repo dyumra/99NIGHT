@@ -1,4 +1,4 @@
--- V527
+-- V528
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players = game:GetService("Players")
@@ -2358,9 +2358,9 @@ local Lighting = game:GetService("Lighting")
 -- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
 local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
 vibrantEffect.Name = "VibrantEffect"
-vibrantEffect.Saturation = 0.8      -- สด 200%
-vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
-vibrantEffect.Brightness = 0.4      -- เพิ่มความสว่างเล็กน้อย
+vibrantEffect.Saturation = 0.5      -- สด 200%
+vibrantEffect.Contrast = 0.2        -- เพิ่มคอนทราสต์
+vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
 vibrantEffect.Enabled = false
 vibrantEffect.Parent = Lighting
 
