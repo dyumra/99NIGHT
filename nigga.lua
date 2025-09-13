@@ -1,4 +1,4 @@
--- V540
+-- V550
 
 repeat task.wait() until game:IsLoaded()
 
@@ -115,6 +115,14 @@ local toolsDamageIDs = {
     ["Old Axe"] = "3_7367831688",
     ["Good Axe"] = "112_7367831688",
     ["Strong Axe"] = "116_7367831688",
+    ["Ice Axe"] = "116_7367831688",
+    ["Admin Axe"] = "116_7367831688",
+    ["Morningstar"] = "116_7367831688",
+    ["Laser Sword"] = "116_7367831688",
+    ["Ice Sword"] = "116_7367831688",
+    ["Katana"] = "116_7367831688",
+    ["Trident"] = "116_7367831688",
+    ["Poison Spear"] = "116_7367831688",
     ["Chainsaw"] = "647_8992824875",
     ["Spear"] = "196_8999010016"
 }
@@ -131,6 +139,12 @@ local alimentos = {
     "Carrot",
     "Cake",
     "Chili",
+	"Cooked Clownfish", 
+	"Cooked Swordfish", 
+	"Cooked Jellyfish", 
+	"Cooked Char", 
+	"Cooked Eel", 
+	"Cooked Shark"
     "Cooked Ribs",
     "Cooked Mackerel",
     "Cooked Salmon",
@@ -144,21 +158,25 @@ local ie = {
     "Bandage", "Bolt", "Broken Fan", "Broken Microwave", "Cake", "Carrot", "Chair", "Coal", "Coin Stack",
     "Cooked Morsel", "Cooked Steak", "Fuel Canister", "Iron Body", "Leather Armor", "Log", "MadKit", "Metal Chair",
     "MedKit", "Old Car Engine", "Old Flashlight", "Old Radio", "Revolver", "Revolver Ammo", "Rifle", "Rifle Ammo",
-    "Morsel", "Sheet Metal", "Steak", "Tyre", "Washing Machine", "Cultist Gem", "Gem of the Forest Fragment"
+    "Morsel", "Sheet Metal", "Steak", "Tyre", "Washing Machine", "Cultist Gem", "Gem of the Forest Fragment", "Frozen Shuriken",
+	"Tactical Shotgun", "Snowball", "Kunai"
 }
-local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Cultist", "Crossbow Cultist", "Alien", "Alien Elite"}
+local me = {"Bunny", "Wolf", "Alpha Wolf", "Bear", "Crossbow Cultist", "Alien", "Alien Elite", "Polar Bear", "Arctic Fox", "Mammoth", "Cultist", "Cultist Melee", "Cultist Crossbow", "Cultist Juggernaut"}
 
 -- bring
-
- local junkItems = {"Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine"}
+local BlueprintItems = {"Crafting Blueprint", "Defense Blueprint", "Furniture Blueprint"}
+local selectedBlueprintItems = {}
+local PeltsItems = {"Bunny Foot", "Wolf Pelt", "Alpha Wolf Pelt", "Bear Pelt", "Arctic Fox Pelt", "Polar Bear Pelt"}
+local selectedPeltsItems = {}
+local junkItems = {"Bolt", "Sheet Metal", "UFO Junk", "UFO Component", "Broken Fan", "Old Radio", "Broken Microwave", "Tyre", "Metal Chair", "Old Car Engine", "Washing Machine", "Cultist Experiment", "Cultist Prototype", "UFO Scrap", "Cultist Gem", "Gem of the Forest Fragment", "Feather", "Old Boot"}
 local selectedJunkItems = {}
 local fuelItems = {"Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel"}
 local selectedFuelItems = {}
-local foodItems = {"Cake", "Cooked Steak", "Cooked Morsel", "Ribs", "Salmon", "Cooked Salmon", "Cooked Ribs", "Mackerel", "Cooked Mackerel", "Steak", "Morsel", "Berry", "Carrot"}
+local foodItems = {"Cake", "Cooked Steak", "Cooked Morsel", "Ribs", "Salmon", "Cooked Salmon", "Cooked Ribs", "Mackerel", "Cooked Mackerel", "Steak", "Morsel", "Berry", "Carrot", "Stew", "Hearty Stew", "Corn", "Pumpkin", "Meat? Sandwich", "Pumpkin", "Seafood Chowder", "Steak Dinner", "Pumpkin Soup", "BBQ Ribs", "Carrot Cake", "Jar o’ Jelly", "Mackerel", "Salmon", "Clownfish", "Swordfish", "Jellyfish", "Char", "Eel", "Shark"	"Cooked Clownfish", "Cooked Swordfish", "Cooked Jellyfish", "Cooked Char", "Cooked Eel", "Cooked Shark"}
 local selectedFoodItems = {}
 local medicalItems = {"Bandage", "MedKit"}
 local selectedMedicalItems = {}
-local equipmentItems = {"Revolver", "Rifle", "Leather Body", "Iron Body", "Revolver Ammo", "Rifle Ammo", "Giant Sack", "Good Sack", "Strong Axe", "Good Axe"}
+local equipmentItems = {"Revolver", "Rifle", "Revolver Ammo", "Rifle Ammo", "Giant Sack", "Good Sack", "Strong Axe", "Good Axe", "Frozen Shuriken", "Tactical Shotgun", "Snowball", "Kunai", "Leather Body", "Poison Armour", "Iron Body", "Thorn Body", "Riot Shield", "Alien Armour", "Red Key", "Blue Key", "Yellow Key", "Grey Key", "Frog Key", "Chili Seeds", "Flower Seeds", "Berry Seeds", "Firefly Seeds", "Old Rod", "Good Rod", "Strong Rod"}
 local selectedEquipmentItems = {}
 
 local isCollecting = false
@@ -166,6 +184,8 @@ local originalPosition = nil
 local autoBringEnabled = false
 
 -- Toggle states for each category
+local BlueprintToggleEnabled = false
+local PeltsToggleEnabled = false
 local junkToggleEnabled = false
 local fuelToggleEnabled = false
 local foodToggleEnabled = false
@@ -173,6 +193,8 @@ local medicalToggleEnabled = false
 local equipmentToggleEnabled = false
 
 -- Loop control variables to properly stop threads
+local BlueprintLoopRunning = false
+local PeltsLoopRunning = false
 local junkLoopRunning = false
 local fuelLoopRunning = false
 local foodLoopRunning = false
@@ -379,7 +401,7 @@ local selectedCampfireItem = nil -- Single item storage
 local autoUpgradeCampfireEnabled = false
 
 -- Added New
-local scrapjunkItems = {"Log", "Chair", "Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine"}
+local scrapjunkItems = {"Log", "Chair", "Tyre", "Bolt", "Broken Fan", "Broken Microwave", "Sheet Metal", "Old Radio", "Washing Machine", "Old Car Engine", "Cultist Gem", "Gem of the Forest Fragment"}
 local autoScrapPos = Vector3.new(21, 20, -5)
 local selectedScrapItem = nil
 local autoScrapItemsEnabled = false
@@ -391,7 +413,7 @@ local autoCookEnabled = false
 
 local function getAnyToolWithDamageID(isChopAura)
     for toolName, damageID in pairs(toolsDamageIDs) do
-        if isChopAura and toolName ~= "Old Axe" and toolName ~= "Good Axe" and toolName ~= "Strong Axe" then
+        if isChopAura and toolName ~= "Old Axe" and toolName ~= "Good Axe" and toolName ~= "Strong Axe" and toolName ~= "Ice Axe" and toolName ~= "Chainsaw" then
             continue
         end
         local tool = LocalPlayer:FindFirstChild("Inventory") and LocalPlayer.Inventory:FindFirstChild(toolName)
@@ -1162,15 +1184,24 @@ Tabs.Auto:Toggle({
         if checked then
             task.spawn(function()
                 while autoUpgradeCampfireEnabled do
-                    -- Check if an item is selected
                     if selectedCampfireItem then
+                        local items = {}
+                        
+                        -- เก็บ item ที่ตรงชื่อไว้ในตาราง
                         for _, item in ipairs(workspace:WaitForChild("Items"):GetChildren()) do
                             if item.Name == selectedCampfireItem then
-                                moveItemToPos(item, campfireDropPos)
+                                table.insert(items, item)
                             end
                         end
+
+                        -- ดึงทีละ 10 (หรือถ้ามีน้อยกว่าก็ดึงทั้งหมด)
+                        local count = math.min(10, #items)
+                        for i = 1, count do
+                            moveItemToPos(items[i], campfireDropPos)
+                        end
                     end
-                    task.wait(2)
+
+                    task.wait(1) -- รอ 2 วิ ก่อนวนใหม่
                 end
             end)
         end
@@ -1198,15 +1229,24 @@ Tabs.Auto:Toggle({
         if checked then
             task.spawn(function()
                 while autoScrapItemsEnabled do
-                    -- Check if an item is selected
                     if selectedScrapItem then
+                        local items = {}
+                        
+                        -- เก็บ item ที่ตรงชื่อไว้ในตาราง
                         for _, item in ipairs(workspace:WaitForChild("Items"):GetChildren()) do
                             if item.Name == selectedScrapItem then
-                                moveItemToPos(item, autoScrapPos)
+                                table.insert(items, item)
                             end
                         end
+
+                        -- ดึงทีละ 10 (หรือถ้ามีน้อยกว่าก็ดึงทั้งหมด)
+                        local count = math.min(10, #items)
+                        for i = 1, count do
+                            moveItemToPos(items[i], autoScrapPos)
+                        end
                     end
-                    task.wait(2)
+                    
+                    task.wait(1) -- รอ 2 วิ ก่อนวนใหม่
                 end
             end)
         end
@@ -1512,6 +1552,100 @@ Tabs.Tp:Button({
                     end
                 end
             end
+        end
+    end
+})
+
+Tabs.br:Section({ Title = "Blue Print", Icon = "hammer" })
+
+Tabs.br:Dropdown({
+    Title = "Select Blue Print Items",
+    Desc = "Choose items to bring",
+    Values = selectedBlueprintItems,
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedBlueprintItems = options
+    end
+})
+
+Tabs.br:Toggle({
+    Title = "Bring Blue Print Items",
+    Desc = "Before you Bring Unlocked 1 zone first!",
+    Default = false,
+    Callback = function(value)
+        BlueprintToggleEnabled = value
+        
+        if value then
+            if #selectedBlueprintItems > 0 then
+                BlueprintLoopRunning = true
+                spawn(function()
+                    while BlueprintLoopRunning and BlueprintToggleEnabled do
+                        if #selectedBlueprintItems > 0 and BlueprintToggleEnabled then
+                            bypassBringSystem(selectedBlueprintItems, function() return BlueprintToggleEnabled end)
+                        end
+                        
+                        -- Wait with proper stop checking
+                        local waitTime = 0
+                        while waitTime < 3 and BlueprintToggleEnabled and BlueprintLoopRunning do
+                            wait(0.1)
+                            waitTime = waitTime + 0.1
+                        end
+                    end
+                    BlueprintLoopRunning = false
+                end)
+            else
+                BlueprintToggleEnabled = false
+            end
+        else
+            BlueprintLoopRunning = false
+        end
+    end
+})
+
+Tabs.br:Section({ Title = "Pelts", Icon = "shirt" })
+
+Tabs.br:Dropdown({
+    Title = "Select Pelts Items",
+    Desc = "Choose items to bring",
+    Values = PeltsItems,
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedPeltsItems = options
+    end
+})
+
+Tabs.br:Toggle({
+    Title = "Bring Pelts Items",
+    Desc = "Before you Bring Unlocked 1 zone first!",
+    Default = false,
+    Callback = function(value)
+        PeltsToggleEnabled = value
+        
+        if value then
+            if #selectedPeltsItems > 0 then
+                PeltsLoopRunning = true
+                spawn(function()
+                    while PeltsLoopRunning and PeltsToggleEnabled do
+                        if #selectedPeltsItems > 0 and PeltsToggleEnabled then
+                            bypassBringSystem(selectedPeltsItems, function() return PeltsToggleEnabled end)
+                        end
+                        
+                        -- Wait with proper stop checking
+                        local waitTime = 0
+                        while waitTime < 3 and PeltsToggleEnabled and PeltsLoopRunning do
+                            wait(0.1)
+                            waitTime = waitTime + 0.1
+                        end
+                    end
+                    PeltsLoopRunning = false
+                end)
+            else
+                PeltsToggleEnabled = false
+            end
+        else
+            PeltsLoopRunning = false
         end
     end
 })
